@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>dbutils module</title>
+    
+      <link rel="stylesheet" href="static/pygments.css">
+      <link rel="stylesheet" href="static/theme.css">
+      <link rel="stylesheet" href="static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script type="text/javascript" src="static/jquery.js"></script>
+        <script type="text/javascript" src="static/underscore.js"></script>
+        <script type="text/javascript" src="static/doctools.js"></script>
+        <script type="text/javascript" src="static/language_data.js"></script>
+
+      
+      <script src="static/theme-vendors.js"></script>
+      <script src="static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="index.html" class="home-link">
+    
+      <span class="site-name">omop-learn</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+    
+    <li>dbutils module</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <div class="section" id="dbutils-module">
+<h1>dbutils module<a class="headerlink" href="#dbutils-module" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-Utils.dbutils"></span><dl class="class">
+<dt id="Utils.dbutils.Database">
+<em class="property">class </em><code class="sig-prename descclassname">Utils.dbutils.</code><code class="sig-name descname">Database</code><span class="sig-paren">(</span><em class="sig-param">config_path</em>, <em class="sig-param">schema_name</em>, <em class="sig-param">echo=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Utils.dbutils.Database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Wrapper class for a postgres database accessed using SQLalchemy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_path</strong> (<em>str</em>) – Path to access the database.</p></li>
+<li><p><strong>schema_name</strong> (<em>str</em>) – The default schema.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="Utils.dbutils.Database.build_table">
+<code class="sig-name descname">build_table</code><span class="sig-paren">(</span><em class="sig-param">table_name</em>, <em class="sig-param">sql</em><span class="sig-paren">)</span><a class="headerlink" href="#Utils.dbutils.Database.build_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a table in the database, replacing it if it already exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_name</strong> (<em>str</em>) – The table to create</p></li>
+<li><p><strong>sql</strong> (<em>str</em>) – The query to be run to create the table</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Utils.dbutils.Database.execute">
+<code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param">*sqls</em><span class="sig-paren">)</span><a class="headerlink" href="#Utils.dbutils.Database.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run each of the queries in <cite>sqls</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sqls</strong> (<em>list</em>) – A list of strings, each of which is a SQL query to be run.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Utils.dbutils.Database.fast_query">
+<code class="sig-name descname">fast_query</code><span class="sig-paren">(</span><em class="sig-param">sql</em><span class="sig-paren">)</span><a class="headerlink" href="#Utils.dbutils.Database.fast_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quickly get the results of a SQL query into a <cite>pandas.DataFrame</cite> by using an intermediate file buffer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sql</strong> (<em>str</em>) – The query to be run</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Query result</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(pd.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Utils.dbutils.Database.get_all_tables">
+<code class="sig-name descname">get_all_tables</code><span class="sig-paren">(</span><em class="sig-param">schema='cdm'</em><span class="sig-paren">)</span><a class="headerlink" href="#Utils.dbutils.Database.get_all_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all tables in a schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>schema</strong> (<em>str</em>) – The schema to check for tables in.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all tables in <cite>schema</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Utils.dbutils.Database.query">
+<code class="sig-name descname">query</code><span class="sig-paren">(</span><em class="sig-param">sql</em><span class="sig-paren">)</span><a class="headerlink" href="#Utils.dbutils.Database.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the results of a SQL query into a <cite>pandas.Dataframe</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sql</strong> (<em>str</em>) – The query to be run</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Query result</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(pd.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Rohan Kodialam.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

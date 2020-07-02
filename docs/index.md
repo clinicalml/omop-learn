@@ -23,7 +23,7 @@ To formally specify our task, we require a set of rules to decide who is include
 ![Diagram of a Predictive Task Specification](https://i.imgur.com/P03wz6X.png)
 We define our end-of-life task as follows:
 
-> For each patient who is on Medicare, and is enrolled in an insurance plan for which we have claims data available for 95% of the days of calendar year 2016, and is alive as of March 31, 2017: predict if the patient will die during the interval of time between April 1, 2017 and September 31, 2017 using data including the drugs prescribed, procedures performed, conditions diagnosed and the medical specialties of the clinicians who cared for the patient during 2016.
+> For each patient who is over the age of 70 at prediction time, and is enrolled in an insurance plan for which we have claims data available for 95% of the days of calendar year 2016, and is alive as of March 31, 2017: predict if the patient will die during the interval of time between April 1, 2017 and September 31, 2017 using data including the drugs prescribed, procedures performed, conditions diagnosed and the medical specialties of the clinicians who cared for the patient during 2016.
 
 omop-learn splits the conversion of this natural language specification of a task to code into two natural steps. First, we define a **cohort** of patients, each of which has an outcome. Second, we generate **features** for each of these patients -- these two steps are kept independent of each other in omop-learn, allowing different cohorts or feature sets to very quickly be tested and evaluated. We explain how cohorts and features are initialized through the example of the end-of-life problem.
 #### 1.1 <a name="define_cohort"></a> Cohort Initialization
@@ -61,7 +61,7 @@ Note that the dates are left as template strings that can be filled later on. Ne
             sum(num_days) >= 0.95 * (date '{ training_end_date }' - date '{ training_start_date }')
     )
 ```
-The next step is to find outcomes. We do so only for Medicare users by using a proprietary non-OMOP table `cdm_aux.medicare_ppl` listing the `person_id` of all Medicare patients in our data, demonstrating the use of an auxiliary schema:
+The next step is to find outcomes. 
 ```sql
 death_dates as (
         select
@@ -69,11 +69,17 @@ death_dates as (
             p.death_datetime
         from
             cdm.person p
-        inner join
-            cdm_aux.medicare_ppl m
-        on
-            p.person_id = m.person_id
     )
+```
+Then, we select for patients over the age of 70 at prediction time:
+```sql
+eligible_people as (
+        select p.person_id
+        from cdm.person p
+        where extract(
+            year from date '{training_end_date}'
+        ) - p.year_of_birth > 70
+    ),
 ```
 Finally, we can create the cohort:
 ```sql
@@ -94,7 +100,7 @@ Finally, we can create the cohort:
             ), false
         )::int as y
     from
-        cdm_aux.medicare_ppl p
+        eligible_people p
         inner join death_testwindow_elig_perc te on te.person_id = p.person_id
         left join death_dates d on d.person_id = p.person_id
     where
@@ -217,6 +223,6 @@ The FeatureGenerator file defines two objects: Features and FeatureSets. Feature
 FeatureSet objects simply collect a list of Feature objects. When the 'build' function is called, the FeatureSet will run all SQL associated with each Feature and insert the resulting rows into a highly data-efficient three-dimensional sparse tensor representation, with the three axes of this tensor representing distinct patients, distinct features, and distinct timestamps respectively. The tensor can then be accessed directly and manipulated as needed for any chosen modelling approach. 
 
 
-### PL2 Test Driver.ipynb
+### End of Life Linear Model Example.ipynb and End of Life Deep Model Example.ipynb
 
-This notebook walks through all the present functionality of the library through the example of building a relatively simple yet performant end-of-life prediction model from OMOP data loaded from IBC. Use this file as a tutorial and as a way to see the correct way to call the functions in the library.
+These notebooks walk through all the functionality of the library through the example of building a relatively simple yet performant end-of-life prediction model from OMOP data loaded from IBC. Use these files as a tutorial and as a way to see the correct way to call the functions in the library.

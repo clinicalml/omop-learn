@@ -15,6 +15,7 @@ For a more detailed summary of omop-learn's data collection pipeline, and for do
 The following libraries are necessary to run omop-learn:
 
 - numpy
+- sqlalchemy
 - pandas
 - torch
 - sklearn

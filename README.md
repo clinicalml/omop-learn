@@ -35,6 +35,8 @@ We provide two example notebooks, `End of Life Linear Model Example.ipynb` and `
 To run the models, first set up the file `config.py` with connection information for your Postgres server containing an OMOP CDM database. Then, simply run through the cells of the notebook in order. Further documentation of the exact steps taken to define a task, collect data, and run a predictive model are embedded within the notebooks. 
 
 
-## Contributors
+## Contributors and Acknowledgements
 
-Rohan Kodialam, Rebecca Boiarsky, Jake Marcus, Ike Lage, Shannon Hwang
+Omop-learn was written by Rohan Kodialam and Jake Marcus, with additional contributions by Rebecca Boiarsky, Ike Lage, and Shannon Hwang.
+
+This package was developed as part of a collaboration with Independence Blue Cross and would not have been possible without the advice and support of Aaron Smith-McLallen, Ravi Chawla, Kyle Armstrong, Luogang Wei, and Jim Denyer.

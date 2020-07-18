@@ -6,7 +6,7 @@ This library was developed in order to facilitate rapid prototyping in Python of
 
 Two machine-learning models are included with the library. First, a windowed linear model, which uses various backwards-facing windows to aggregate features over different timescales, then feeds these features into a regularized logistic regression model. This model was inspired by the work of [Razavian et. al. '15](https://people.csail.mit.edu/dsontag/papers/RazavianEtAl_BigData15.pdf), and despite its simplicity is often competitive with state-of-the-art algorithms. We also include SARD (Self-Attention with Reverse Distillation), a novel deep-learning algorithm that uses self-attention to allow medical events to contextualize themselves using other events in a patient's timeline. SARD also makes use of reverse distillation, a training technique we introduce that effectively initializes a deep model using a high-performing linear proxy, in this case the windowed linear model described above -- for the details of this method and the SARD architecture, please see our paper [Kodialam et al. '20](https://arxiv.org/abs/2007.05611).
 
-## Code
+## Documentation
 
 For a more detailed summary of omop-learn's data collection pipeline, and for documentation of functions, please see the full [documentation](https://clinicalml.github.io/omop-learn/) for this repo, which also describes the process of creating one's own cohorts, predictive tasks, and features. 
 

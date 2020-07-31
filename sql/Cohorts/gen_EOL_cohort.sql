@@ -3,7 +3,7 @@
 
     Inclusion criteria:
     - Enrolled in 95% of months of training
-    - Enrolled in 95% of days during outcome window
+    - Enrolled in 95% of days during outcome window, or expired during outcome window
     - Patient over the age of 70 at prediction time
 */
 
@@ -78,12 +78,19 @@ with
     ), 
     death_testwindow_elig_perc as (
         select
-            person_id
+            dtec.person_id
         from
-            death_testperiod_elig_counts
+            death_testperiod_elig_counts dtec
+        join 
+            death_dates d  
+        on 
+            dtec.person_id = d.person_id
         group by 
-            person_id
+            dtec.person_id, d.death_datetime  
         having
+            (d.death_datetime >= date '{training_end_date}' + interval '{gap}' and
+             d.death_datetime <= date '{training_end_date}' + interval '{gap}' + interval '{outcome_window}') 
+        or
             sum(num_days) >= 0.95 * extract(
                 epoch from (
                     interval '{gap}' 

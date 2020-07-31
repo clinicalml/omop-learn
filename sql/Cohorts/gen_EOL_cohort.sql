@@ -85,11 +85,11 @@ with
             person_id
         having
             sum(num_days) >= 0.95 * extract(
-                days from (
-                    interval '{gap}'
-                    + interval '{outcome_window}'
+                epoch from (
+                    interval '{gap}' 
+                    + interval '{outcome_window}' --epoch returns the number of seconds in gap + outcome_window
                 )
-            )
+            )/(24*60*60) --convert seconds to days
     ) 
     
     select

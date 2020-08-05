@@ -223,7 +223,7 @@ class FeatureSet():
         
 
 
-def postprocess_feature_matrix(cohort, featureSet):
+def postprocess_feature_matrix(cohort, featureSet, training_end_date_col='training_end_date'):
     feature_matrix_3d = featureSet.get_sparr_rep()
     outcomes = cohort._cohort.set_index('person_id').loc[
         sorted(featureSet.seen_ids)
@@ -238,7 +238,7 @@ def postprocess_feature_matrix(cohort, featureSet):
     ]
     good_time_ixs = [
         i for i in sorted(featureSet.time_map)
-        if featureSet.time_map[i] <= cohort._cohort_generation_kwargs['training_end_date']
+        if featureSet.time_map[i] <= cohort._cohort_generation_kwargs[training_end_date_col]
     ]
     feature_matrix_3d = feature_matrix_3d[good_feature_ix, :, :]
     feature_matrix_3d = feature_matrix_3d[:, good_time_ixs, :]

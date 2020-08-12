@@ -3,7 +3,7 @@ select
     a.drug_concept_id || ' - drug - ' || coalesce (
         c.concept_name, 'no match'
     ) as concept_name,
-    date '2100-01-01' - b.end_date + a.drug_exposure_start_datetime as feature_start_date,     -- dummy date to right-align features
+    date '1900-01-01' - b.end_date + date (a.drug_exposure_start_datetime) as feature_start_date,     -- dummy date to right-align features
     b.start_date as person_start_date,
     b.end_date as person_end_date
 from 

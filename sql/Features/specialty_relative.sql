@@ -1,4 +1,5 @@
 select 
+    b.example_id,
     a.person_id,
     p.specialty_concept_id || ' - specialty - ' || coalesce (
         c.concept_name, 'no match'

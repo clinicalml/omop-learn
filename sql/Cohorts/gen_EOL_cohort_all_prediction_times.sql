@@ -179,7 +179,7 @@ with
         group by
             person_id, possible_end_dates
         having
-            sum(num_days) >= 0.99 * extract(        --note: setting this to 1.00 causes problems e.g. 1 year evaluates to 365.25
+            sum(num_days) >= 0.95 * extract(
                 epoch from (
                     interval '{eligibility_period}' --epoch returns the number of seconds in eligibility_period
                 )
@@ -222,7 +222,7 @@ with
             person_id,
             possible_end_dates
         having
-            sum(num_days) >= 1 * extract(
+            sum(num_days) >= 0.95 * extract(
                 epoch from (
                     interval '{gap}' 
                     + interval '{outcome_window}' --epoch returns the number of seconds in gap + outcome_window

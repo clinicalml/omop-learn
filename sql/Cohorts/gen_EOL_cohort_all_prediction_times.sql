@@ -1,5 +1,5 @@
 /*
-End-of-life cohort query with ALL positive samples and ALL negative samples (one per person).
+End-of-life cohort query with ALL positive samples and uniform negative samples.
     
 Inclusion criteria:
 - Enrolled in 95% of months of training
@@ -8,7 +8,7 @@ Inclusion criteria:
 
 Additionally,
 - Includes every positive sample (prediction time set to between 'gap' and 'gap'+'outcome_window' before death)
-- Includes every negative sample, one per eligible person (prediction time randomly chosen from set of eligible months)
+- Includes uniform negative samples, one per eligible person (prediction time randomly chosen from set of eligible months)
 */
 
 create table {schema_name}.{cohort_table_name} as

@@ -45,7 +45,8 @@ class FeatureSet():
             ),
         id_col = 'person_id',
         time_col = 'feature_start_date',
-        feature_col = 'concept_name'
+        feature_col = 'concept_name',
+        unique_id_col = 'example_id'
         ):
         
         self._db = db
@@ -54,6 +55,7 @@ class FeatureSet():
         self.id_col = id_col
         self.time_col = time_col
         self.feature_col = feature_col
+        self.unique_id_col = unique_id_col
         
         self._temporal_features = []
         self._nontemporal_features = []
@@ -105,7 +107,7 @@ class FeatureSet():
         )
 
     def build(self, cohort, cache_file='/tmp/store.csv', from_cached=False):
-        sep_col = self.id_col
+        # sep_col = self.id_col
         joined_sql = "{} order by {} asc".format(
             " union all ".join(
                     f._sql_raw.format(
@@ -117,7 +119,9 @@ class FeatureSet():
                     )
                 for f in self._temporal_features
             ),
-            ",".join([sep_col, self.time_col, self.feature_col])
+            ",".join([self.unique_id_col,      ## Order by unique_id
+                      # sep_col, 
+                      self.time_col, self.feature_col])    
         )
         if not from_cached:
             copy_sql = """
@@ -151,7 +155,8 @@ class FeatureSet():
         for chunk in pd.read_csv(store, chunksize=chunksize):
             self.concepts = self.concepts.union(set(chunk[self.feature_col].unique()))
             self.times = self.times.union(set(chunk[self.time_col].unique()))
-            self.seen_ids = self.seen_ids.union(set(chunk[self.id_col].unique()))
+            # self.seen_ids = self.seen_ids.union(set(chunk[self.id_col].unique()))
+            self.seen_ids = self.seen_ids.union(set(chunk[self.unique_id_col].unique()))
         self.times = sorted(list(self.times))
         self.concepts = sorted(list(self.concepts))
         self.seen_ids = sorted(list(self.seen_ids))
@@ -161,9 +166,12 @@ class FeatureSet():
         
         t = time.time()
         store.seek(0)
-        self.ids = cohort._cohort[self.id_col].unique()
-        self.id_map = {i:person_id for i,person_id in enumerate(self.seen_ids)}
-        self.id_map_rev = {person_id:i for i,person_id in enumerate(self.seen_ids)}
+#         self.ids = cohort._cohort[self.id_col].unique()
+        self.ids = cohort._cohort[self.unique_id_col].unique()
+#         self.id_map = {i:person_id for i,person_id in enumerate(self.seen_ids)}
+#         self.id_map_rev = {person_id:i for i,person_id in enumerate(self.seen_ids)}
+        self.id_map = {i:example_id for i,example_id in enumerate(self.seen_ids)}
+        self.id_map_rev = {example_id:i for i,example_id in enumerate(self.seen_ids)}
         self.concept_map = {i:concept_name for i,concept_name in enumerate(self.concepts)}
         self.concept_map_rev = {concept_name:i for i,concept_name in enumerate(self.concepts)}
         self.time_map = {i:t for i,t in enumerate(self.times)}
@@ -179,10 +187,13 @@ class FeatureSet():
         spm_arr = []
         self.recorded_ids = set()
         for chunk_num, chunk in enumerate(pd.read_csv(store, chunksize=chunksize)):
-            first = chunk.iloc[0][sep_col]
+            # first = chunk.iloc[0][sep_col]
+            first = chunk.iloc[0][self.unique_id_col]
 
-            vals = chunk[sep_col].unique()
-            indices = np.searchsorted(chunk[sep_col], vals)
+            # vals = chunk[sep_col].unique()
+            vals = chunk[self.unique_id_col].unique()
+            # indices = np.searchsorted(chunk[sep_col], vals)
+            indices = np.searchsorted(chunk[self.unique_id_col], vals)
             self.recorded_ids = self.recorded_ids.union(set(vals))
             
             chunk.loc[:, self.feature_col] = chunk[self.feature_col].apply(self.concept_map_rev.get)
@@ -210,7 +221,8 @@ class FeatureSet():
                     spm_arr.append(spm_stored)
             spm_arr += spm_local[:-1]
             spm_stored = spm_local[-1]
-            last = chunk.iloc[-1][sep_col]
+            # last = chunk.iloc[-1][sep_col]
+            last = chunk.iloc[-1][self.unique_id_col]
         spm_arr.append(spm_stored)
         print(len(spm_arr))
         self._spm_arr = sparse.stack([sparse.COO.from_scipy_sparse(m) for m in spm_arr], 2)
@@ -225,9 +237,13 @@ class FeatureSet():
 
 def postprocess_feature_matrix(cohort, featureSet, training_end_date_col='training_end_date'):
     feature_matrix_3d = featureSet.get_sparr_rep()
-    outcomes = cohort._cohort.set_index('person_id').loc[
+#     outcomes = cohort._cohort.set_index('person_id').loc[
+#         sorted(featureSet.seen_ids)
+#     ]['y']
+    outcomes = cohort._cohort.set_index('example_id').loc[
         sorted(featureSet.seen_ids)
     ]['y']
+    outcomes = cohort._cohort['y']
     good_feature_ix = [
         i for i in sorted(featureSet.concept_map)
         if '- No matching concept' not in featureSet.concept_map[i]
@@ -246,6 +262,7 @@ def postprocess_feature_matrix(cohort, featureSet, training_end_date_col='traini
     total_events_per_person = feature_matrix_3d_transpose.sum(axis=-1).sum(axis=-1)
     people_with_data_ix = np.where(total_events_per_person.todense() > 0)[0].tolist()
     feature_matrix_3d_transpose = feature_matrix_3d_transpose[people_with_data_ix, :, :]
+#     outcomes_filt = outcomes.loc[[featureSet.id_map[i] for i in people_with_data_ix]]
     outcomes_filt = outcomes.loc[[featureSet.id_map[i] for i in people_with_data_ix]]
     remap = {
         'id':people_with_data_ix,

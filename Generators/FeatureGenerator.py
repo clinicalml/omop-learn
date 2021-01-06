@@ -243,7 +243,7 @@ def postprocess_feature_matrix(cohort, featureSet, training_end_date_col='traini
     outcomes = cohort._cohort.set_index('example_id').loc[
         sorted(featureSet.seen_ids)
     ]['y']
-    outcomes = cohort._cohort['y']
+#     outcomes = cohort._cohort['y']
     good_feature_ix = [
         i for i in sorted(featureSet.concept_map)
         if '- No matching concept' not in featureSet.concept_map[i]

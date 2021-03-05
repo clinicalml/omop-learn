@@ -15,11 +15,11 @@ with
             p.person_id,
             p.death_datetime
         from
-            cdm.person p
+            {cdm_schema}.person p
     ),
     eligible_people as (
         select p.person_id
-        from cdm.person p
+        from {cdm_schema}.person p
         where extract(
             year from date '{training_end_date}'
         ) - p.year_of_birth > 70
@@ -38,7 +38,7 @@ with
                     date '{training_start_date}'
                 ), 0
             ) as num_days
-        from cdm.observation_period o
+        from {cdm_schema}.observation_period o
         inner join eligible_people p
         on o.person_id = p.person_id
     ),
@@ -70,7 +70,7 @@ with
                         date '{training_end_date}'
                     ), 0
             ) as num_days
-        from cdm.observation_period p
+        from {cdm_schema}.observation_period p
         inner join 
             death_trainingwindow_elig_perc tr
         on 

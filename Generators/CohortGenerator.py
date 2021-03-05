@@ -6,6 +6,7 @@ from jinja2 import Template
 import pandas as pd
 import datetime as dt
 import time
+import config
 
 class Cohort(object): 
     def __init__(
@@ -63,7 +64,7 @@ class Cohort(object):
                     cohort_generation_sql_raw = f.read()
                 if self._cohort_generation_kwargs is not None:
                     self.cohort_generation_sql = cohort_generation_sql_raw.format(
-                        **self._cohort_generation_kwargs 
+                        **dict(self._cohort_generation_kwargs, **{'cdm_schema':config.OMOP_CDM_SCHEMA})
                     )
                 else:
                     self.cohort_generation_sql = cohort_generation_sql_raw

@@ -20,7 +20,7 @@ with
             p.death_datetime,
             p.year_of_birth
         from
-            cdm.person p
+            {cdm_schema}.person p
     ),
     
     -- First process positive examples...
@@ -68,7 +68,7 @@ with
                     date (p.end_date - interval '{eligibility_period}')
                 ), 0
             ) as num_days
-        from cdm.observation_period o
+        from {cdm_schema}.observation_period o
         inner join positive_people_age p
         on o.person_id = p.person_id
     ),
@@ -126,7 +126,7 @@ with
             )::date as possible_end_dates,
             p.year_of_birth,
             p.y
-        from cdm.observation_period o
+        from {cdm_schema}.observation_period o
         inner join negative_people p
         on o.person_id = p.person_id
     ),
@@ -163,7 +163,7 @@ with
                     date (p.possible_end_dates - interval '{eligibility_period}')
                 ), 0
             ) as num_days
-        from cdm.observation_period o
+        from {cdm_schema}.observation_period o
         inner join negative_people_age p
         on o.person_id = p.person_id
     ),   
@@ -206,7 +206,7 @@ with
                         date(tr.possible_end_dates)
                     ), 0
             ) as num_days
-        from cdm.observation_period p
+        from {cdm_schema}.observation_period p
         inner join 
             negative_training_elig_perc tr
         on 

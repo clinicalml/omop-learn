@@ -1,12 +1,13 @@
 
 # Database Setup
-DB_NAME = 'localhost/omop_v3'
-PG_USERNAME = 'omop_admins'
+DB_NAME = 'localhost/ohdsi'
+PG_USERNAME = 'ohdsi'
 PG_PASSWORD = '***'
 
 # Schemas
 OMOP_CDM_SCHEMA = 'cdm' # schema holding standard OMOP tables
-CDM_AUX_SCHEMA = 'cdm_aux' # schema to hold auxilliary tables not tied to a particular schema
+CDM_AUX_SCHEMA = 'eol_test' # schema to hold auxilliary tables not tied to a particular schema
+CDM_VERSION = 'v5.3.1'
 
 # SQL Paths
 SQL_PATH_COHORTS = 'sql/Cohorts' # path to SQL scripts that generate cohorts

@@ -7,7 +7,7 @@ PG_PASSWORD = '***'
 # Schemas
 OMOP_CDM_SCHEMA = 'cdm' # schema holding standard OMOP tables
 CDM_AUX_SCHEMA = 'cdm_aux' # schema to hold auxilliary tables not tied to a particular schema
-CDM_VERSION = 'v5.3.1'
+CDM_VERSION = 'v6' # set to 'v5.x.x' if on v5
 
 # SQL Paths
 SQL_PATH_COHORTS = 'sql/Cohorts' # path to SQL scripts that generate cohorts

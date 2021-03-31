@@ -30,7 +30,7 @@ Note that `sparse` is the PyData Sparse library, documented [here](https://spars
 
 ## Running omop-learn
 
-We provide two example notebooks, `End of Life Linear Model Example.ipynb` and `End of Life Deep Model Example` which both use an example task of predicting mortality over a six-month window for patients over the age of 70. The two notebooks run the windowed linear and deep SARD models respectively -- note that your machine must be able to access a GPU in order to run the deep models.
+We provide several example notebooks, which all use an example task of predicting mortality over a six-month window for patients over the age of 70. `End of Life Linear Model Example.ipynb` and `End of Life Deep Model Example` run the windowed linear and deep SARD models respectively -- note that your machine must be able to access a GPU in order to run the deep models. `End of Life Linear Model Example (With Nontemporal Features).ipynb` demonstrates how to add nontemporal features. 
 
 To run the models, first set up the file `config.py` with connection information for your Postgres server containing an OMOP CDM database. Then, simply run through the cells of the notebook in order. Further documentation of the exact steps taken to define a task, collect data, and run a predictive model are embedded within the notebooks. 
 

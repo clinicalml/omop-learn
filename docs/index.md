@@ -151,6 +151,18 @@ featureSet.add_default_features(
     schema_name,
     cohort_name
 )
+```
+By default, the package assumes that added features are temporal in nature. omop-learn also supports nontemporal features, such as age and gender.
+```sql
+featureSet.add_default_features(
+    ['drugs','conditions','procedures'],
+    schema_name,
+    cohort_name,
+    temporal=False
+)
+```
+Finally, we call the build() function, which executes the relevant feature queries to create the feature set.
+```sql
 featureSet.build(cohort, cache_file='eol_feature_matrix', from_cached=False)
 ```
 Since collecting the data is often the most time-consuming part of the setup process, we cache intermediate results in the `cache_name` file (if `from_cached` is False) and can later use this data instead of executing the relevant queries (if `from_cached` is True).
@@ -180,7 +192,7 @@ feature_matrix_counts, feature_names = data_utils.window_data(
 ```
 This function takes in the raw sparse tensor of features, filters several times to collect data from the past `d` days for each `d` in `window_lengths`, then sums along the time axis to find the total count of the number of times each code was assigned to a patient over the last `d` days. These count matrices are then concatenated to each other to build a final feature set of windowed count features. Note that unlike a pure SQL implementation of this kind of feature, omop-learn can quickly rerun the analysis for a different set of windows -- this ability to tune the parameters allows us to use a validation set to determine optimal values and thus significantly increase model performance.  
 
-This feature matrix can then be used with any sklearn modelling pipeline -- see the [example notebook](https://github.com/clinicalml/omop-learn/blob/master/PL2%20Test%20Driver.ipynb) for an example pipeline involving some pre-processing followed by a heavily regularized logistic regression.
+This feature matrix can then be used with any sklearn modelling pipeline -- see the example notebook [End of Life Linear Model Example](https://github.com/clinicalml/omop-learn/blob/master/End%20of%20Life%20Linear%20Model%20Example.ipynb) for an example pipeline involving some pre-processing followed by a heavily regularized logistic regression. For an example involving nontemporal features, see the [End of Life Linear Model Example (With Nontemporal Features)](https://github.com/clinicalml/omop-learn/blob/master/End%20of%20Life%20Linear%20Model%20Example%20(With%20Nontemporal%20Features).ipynb).
 
 ## Code Documentation
 

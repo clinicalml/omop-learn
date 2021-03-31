@@ -1,14 +1,14 @@
 select 
     b.example_id,
     a.person_id,
-    a.drug_concept_id || ' - drug - ' || coalesce (
+    1 as ntmp_val,
+    a.race_concept_id || ' - race - ' || coalesce (
         c.concept_name, 'no match'
     ) as concept_name,
-    a.drug_exposure_start_datetime as feature_start_date,
     b.start_date as person_start_date,
     b.end_date as person_end_date
 from 
-    {cdm_schema}.drug_exposure a
+    {cdm_schema}.person a
 inner join
     {cohort_table} b
 on 
@@ -16,8 +16,4 @@ on
 left join
     {cdm_schema}.concept c
 on 
-    c.concept_id = a.drug_concept_id
-where
-    a.drug_exposure_start_datetime <= b.end_date
-
-
+    c.concept_id = a.race_concept_id

@@ -17,3 +17,5 @@ left join
     {cdm_schema}.concept c
 on 
     c.concept_id = a.condition_concept_id
+where
+    a.condition_start_datetime <= b.end_date

@@ -155,7 +155,7 @@ featureSet.add_default_features(
 By default, the package assumes that added features are temporal in nature. omop-learn also supports nontemporal features, such as age and gender.
 ```sql
 featureSet.add_default_features(
-    ['drugs','conditions','procedures'],
+    ['age','gender'],
     schema_name,
     cohort_name,
     temporal=False

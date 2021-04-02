@@ -1,5 +1,5 @@
 /*
-End-of-life cohort query with ALL positive samples and uniform negative samples.
+End-of-life cohort query with ALL samples with outcome = 1 and uniform samples with outcome = 0.
     
 Inclusion criteria:
 - Enrolled in 95% of months of training
@@ -7,8 +7,8 @@ Inclusion criteria:
 - Patient over the age of 70 at prediction time
 
 Additionally,
-- Includes every positive sample (prediction time set to between 'gap' and 'gap'+'outcome_window' before death)
-- Includes uniform negative samples, one per eligible person (prediction time randomly chosen from set of eligible months)
+- Includes every sample with outcome = 1 (prediction time set to between 'gap' and 'gap'+'outcome_window' before death)
+- Includes uniform samples with outcome = 0, one per eligible person (prediction time randomly chosen from set of eligible months)
 */
 
 create table {schema_name}.{cohort_table_name} as
@@ -23,15 +23,15 @@ with
             {cdm_schema}.person p
     ),
     
-    -- First process positive examples...
-    positive_people as (
+    -- First process examples with outcome = 1...
+    outcome1_people as (
         select
             person_id,
             case  -- if uniform, sample from [gap, gap+outcome_window], otherwise constant interval
-                when {positive_pred_unif}
+                when {outcome1_pred_unif}
                     then (death_datetime - (random() * interval '{outcome_window}' 
                                             + interval '{gap}'))::date
-                else death_datetime - interval '{positive_pred_delta}'    
+                else death_datetime - interval '{outcome1_pred_delta}'    
             end as end_date,
             death_datetime as outcome_date,
             year_of_birth,
@@ -41,20 +41,20 @@ with
     ),
     
     -- ...checking for age...
-    positive_people_age as (
+    outcome1_people_age as (
         select
             person_id,
             end_date,
             outcome_date,
             y
-        from positive_people
+        from outcome1_people
         where extract(
             year from end_date
         ) - year_of_birth > 70
     ),
     
-    -- ...then check eligibility of positive samples...
-    positive_training_elig_counts as (
+    -- ...then check eligibility of samples with outcome = 1...
+    outcome1_training_elig_counts as (
         select
             o.person_id,
             o.observation_period_start_date as start,
@@ -69,14 +69,14 @@ with
                 ), 0
             ) as num_days
         from {cdm_schema}.observation_period o
-        inner join positive_people_age p
+        inner join outcome1_people_age p
         on o.person_id = p.person_id
     ),
-    positive_training_elig_perc as (
+    outcome1_training_elig_perc as (
         select
             person_id
         from
-            positive_training_elig_counts
+            outcome1_training_elig_counts
         group by
             person_id
         having
@@ -87,15 +87,15 @@ with
             )/(24*60*60) --convert seconds to days
     ),
     
-    -- ...to get final cohort of positive samples.
-    eligible_positive_people as (
+    -- ...to get final cohort of samples with outcome = 1.
+    eligible_outcome1_people as (
         select
             p.person_id,
             date(p.end_date) as end_date,
             p.outcome_date,
             p.y
-        from positive_people p
-        join positive_training_elig_perc pt
+        from outcome1_people p
+        join outcome1_training_elig_perc pt
         on p.person_id = pt.person_id
     ),
     
@@ -104,8 +104,8 @@ with
     
     
     --Claire's code--
-    -- Then process negative examples--
-    negative_people as(
+    -- Then process examples with outcome = 0--
+    outcome0_people as(
         select
             person_id,
             null::timestamp as outcome_date,
@@ -114,7 +114,7 @@ with
         from death_dates
         where death_datetime is null
     ),
-    negative_people_with_dates as (
+    outcome0_people_with_dates as (
         select 
             o.person_id,
             o.observation_period_start_date as start,
@@ -127,13 +127,13 @@ with
             p.year_of_birth,
             p.y
         from {cdm_schema}.observation_period o
-        inner join negative_people p
+        inner join outcome0_people p
         on o.person_id = p.person_id
     ),
     
     
     -- Age inclusion criteria --
-    negative_people_age as (
+    outcome0_people_age as (
         select
             person_id,
             start,
@@ -141,14 +141,14 @@ with
             year_of_birth,
             possible_end_dates,
             y
-        from negative_people_with_dates
+        from outcome0_people_with_dates
         where extract(
             year from possible_end_dates
         ) - year_of_birth > 70
     ),
 
     -- ...and check eligibility before prediction time...
-    negative_training_elig_counts as (
+    outcome0_training_elig_counts as (
         select 
             o.person_id,
             o.observation_period_start_date as start,
@@ -164,18 +164,18 @@ with
                 ), 0
             ) as num_days
         from {cdm_schema}.observation_period o
-        inner join negative_people_age p
+        inner join outcome0_people_age p
         on o.person_id = p.person_id
     ),   
     
     
     -- New inclusion criteria: 100% in window --
-    negative_training_elig_perc as (
+    outcome0_training_elig_perc as (
         select
             person_id,
             possible_end_dates
         from
-            negative_training_elig_counts
+            outcome0_training_elig_counts
         group by
             person_id, possible_end_dates
         having
@@ -187,7 +187,7 @@ with
     ),
     
     -- ...as well as eligibility in prediction window...
-    negative_test_elig_counts as (
+    outcome0_test_elig_counts as (
         select
             p.person_id,
             p.observation_period_start_date as start,
@@ -208,16 +208,16 @@ with
             ) as num_days
         from {cdm_schema}.observation_period p
         inner join 
-            negative_training_elig_perc tr
+            outcome0_training_elig_perc tr
         on 
             tr.person_id = p.person_id
     ), 
-    negative_test_elig_perc as (
+    outcome0_test_elig_perc as (
         select
             person_id,
             possible_end_dates
         from
-            negative_test_elig_counts
+            outcome0_test_elig_counts
         group by
             person_id,
             possible_end_dates
@@ -230,15 +230,15 @@ with
             )/(24*60*60) --convert seconds to days
     ),
     
-    -- ...to get final cohort of negative samples.
-    eligible_negative_people as (
+    -- ...to get final cohort of samples with outcome = 0.
+    eligible_outcome0_people as (
         select
             p.person_id,
             nt.possible_end_dates as end_date,
             p.outcome_date,
             p.y
-        from negative_people_with_dates p
-        join negative_test_elig_perc nt
+        from outcome0_people_with_dates p
+        join outcome0_test_elig_perc nt
         on p.person_id = nt.person_id
         and p.possible_end_dates = nt.possible_end_dates
     ),
@@ -249,9 +249,9 @@ with
             null::timestamp as start_date,            -- required by omop-learn
             *
         from (
-            select * from eligible_positive_people
+            select * from eligible_outcome1_people
             union all
-            select * from eligible_negative_people 
+            select * from eligible_outcome1_people 
         ) tmp
     )
     

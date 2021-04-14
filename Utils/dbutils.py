@@ -17,6 +17,7 @@ class Database(object):  # noqa
         self.engine = sqlalchemy.create_engine(
             config_path,
             echo=echo,
+            connect_args = {"host": '/var/run/postgresql/'}
         )
         self.meta = sqlalchemy.MetaData(
             bind=self.engine,

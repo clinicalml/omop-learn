@@ -5,7 +5,6 @@ import torch.nn.functional as F
 
 
 '''
-Code based off of work from:
 @article{wolf2019transformers,
   title={Transformers: State-of-the-art Natural Language Processing},
   author={Wolf, Thomas and Debut, Lysandre and Sanh, Victor and Chaumond, Julien and Delangue, Clement and Moi, Anthony and Cistac, Pierric and Rault, Tim and Louf, R{\'e}mi and Funtowicz, Morgan and others},
@@ -34,14 +33,21 @@ class LayerNorm(nn.Module):
 
 class Attention(nn.Module):
 
-    def forward(self, query, key, value, mask=None, dropout=None):
+    def forward(self, query, key, value, mask=None, dropout=None, backwards_only=False):
         scores = torch.matmul(query, key.transpose(-2, -1)) \
             / math.sqrt(query.size(-1))
 
         if mask is not None:
-            mask_shaped = torch.einsum(
-                'bi,bj->bij', (mask, mask)
-            ).unsqueeze(1).expand(scores.shape)
+            
+            if not backwards_only:
+                mask_shaped = torch.einsum(
+                    'bi,bj->bij', (mask, mask)
+                ).unsqueeze(1).expand(scores.shape)
+            else:
+                mask_shaped = torch.triu(torch.einsum(
+                    'bi,bj->bij', (mask, mask)
+                )).unsqueeze(1).expand(scores.shape)
+                
             scores = scores.masked_fill(mask_shaped == 0, -1e9)
 
         p_attn = F.softmax(scores, dim=-1)
@@ -52,10 +58,12 @@ class Attention(nn.Module):
         return torch.matmul(p_attn, value), p_attn
     
 class MultiHeadedAttention(nn.Module):
-    def __init__(self, hidden_size = 300, num_attention_heads = 4, dropout=0.3):
+    def __init__(self, hidden_size = 300, num_attention_heads = 4, dropout=0.3, backwards_only=False):
         super().__init__()
         assert hidden_size % num_attention_heads == 0
 
+        self.backwards_only = backwards_only
+                                       
         self.d_k = hidden_size // num_attention_heads
         self.h = num_attention_heads
 
@@ -70,12 +78,12 @@ class MultiHeadedAttention(nn.Module):
         
         self.attn = None
 
-    def forward(self, query, key, value, mask=None):
+    def forward(self, query, key, value, mask=None, backwards_only=False):
         batch_size = query.size(0)
         query, key, value = [l(x).view(batch_size, -1, self.h, self.d_k).transpose(1, 2)
                              for l, x in zip(self.linear_layers, (query, key, value))]
         x, attn = self.attention(
-            query, key, value, mask=mask, dropout=self.dropout)
+            query, key, value, mask=mask, dropout=self.dropout, backwards_only=self.backwards_only)
         x = x.transpose(1, 2).contiguous().view(
             batch_size, -1, self.h * self.d_k)
 
@@ -108,10 +116,10 @@ class PositionwiseFeedForward(nn.Module):
 
 class TransformerBlock(nn.Module):
 
-    def __init__(self, hidden, heads, dropout=0.3, tr_dropout=0.3):
+    def __init__(self, hidden, heads, dropout=0.3, tr_dropout=0.3, backwards_only=False):
 
         super().__init__()
-        self.attention = MultiHeadedAttention(hidden, heads, tr_dropout)
+        self.attention = MultiHeadedAttention(hidden, heads, tr_dropout, backwards_only=backwards_only)
         self.feed_forward = PositionwiseFeedForward(hidden, tr_dropout)
         self.input_sublayer = SublayerConnection(hidden, tr_dropout)
         self.output_sublayer = SublayerConnection(hidden, tr_dropout)
@@ -135,5 +143,24 @@ class RNNBlock(nn.Module):
         
     def forward(self, x, mask=None):
         return self.rnn(x)[0]
+        
+    
+class BertLMPredictionHead(nn.Module):
+    
+    def __init__(self, voc_size=None, hidden_size=300):
+        super(BertLMPredictionHead, self).__init__()
+        self.dense = nn.Linear(hidden_size, hidden_size)
+        self.transform_act_fn = gelu
+        self.LayerNorm = LayerNorm(hidden_size, eps=1e-12)
+        
 
+        self.decoder = nn.Linear(hidden_size, voc_size)
+
+    def forward(self, hidden_states):
+        hidden_states = self.dense(hidden_states)
+        hidden_states = self.transform_act_fn(hidden_states)
+        hidden_states = self.LayerNorm(hidden_states)
+        
+        hidden_states = self.decoder(hidden_states)
+        return hidden_states
     

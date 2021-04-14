@@ -1,4 +1,6 @@
 from gensim.models.word2vec import LineSentence, Word2Vec
+import random
+import datetime
 
 def train_embedding(featureSet, feature_matrix_3d_transpose, window_days, person_ixs, time_ixs, good_time_ixs, embedding_dim):
     data_filename = "wtv_data_window_{}d.txt".format(window_days)
@@ -13,7 +15,7 @@ def train_embedding(featureSet, feature_matrix_3d_transpose, window_days, person
             until = None
             last_p = p_ix
         t = featureSet.time_map[good_time_ixs[t_ix]]
-        t = datetime.datetime.strptime(t, '%Y-%m-%d')
+        t = datetime.datetime.strptime(t, '%Y-%m-%d %H:%M:%S')
         if until is None or t > until:
             if s:
                 for _ in range(5):

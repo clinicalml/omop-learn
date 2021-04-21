@@ -12,7 +12,7 @@ import config
         
 class Database(object):  # noqa
 
-    def __init__(self, config_path, schema_name, connect_args, cdm_schema_name="cdm", echo=False): 
+    def __init__(self, config_path, schema_name, connect_args, cdm_schema_name, echo=False): 
         
         self.engine = sqlalchemy.create_engine(
             config_path,

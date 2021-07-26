@@ -2,7 +2,7 @@ import pandas as pd
 from config import omop_schema, user_schema
 from sqlalchemy import Column, BigInteger, Integer, String
 
-from ORMTables.cdm_6_0 import Base, ConditionOccurrence, ProcedureOccurrence, DrugExposure, DeviceExposure, ObservationPeriod
+# from ORMTables.cdm_6_0 import Base, ConditionOccurrence, ProcedureOccurrence, DrugExposure, DeviceExposure, ObservationPeriod
 
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -45,11 +45,12 @@ class CohortTable(Base):
     outcome_date = Column(String(length=20))
     y            = Column(Integer)
     
+    # Table references are added from InspectOMOP package at runtime in 'build' function.
     domain_table_dict = {
-        'Condition': {'table': ConditionOccurrence, 'concept_column': 'condition_concept_id', 'date_column': 'condition_start_date'}, 
-        'Procedure': {'table': ProcedureOccurrence, 'concept_column': 'procedure_concept_id', 'date_column': 'procedure_date'},
-        'Drug': {'table': DrugExposure, 'concept_column': 'drug_concept_id', 'date_column': 'drug_exposure_start_date'}, 
-        'Device': {'table': DeviceExposure, 'concept_column': 'device_concept_id', 'date_column': 'device_exposure_start_date'}
+        'Condition': {'table': None, 'concept_column': 'condition_concept_id', 'date_column': 'condition_start_date'}, 
+        'Procedure': {'table': None, 'concept_column': 'procedure_concept_id', 'date_column': 'procedure_date'},
+        'Drug': {'table': None, 'concept_column': 'drug_concept_id', 'date_column': 'drug_exposure_start_date'}, 
+        'Device': {'table': None, 'concept_column': 'device_concept_id', 'date_column': 'device_exposure_start_date'}
     }
 
     def __repr__(self):
@@ -68,6 +69,13 @@ class CohortTable(Base):
                     pass
 
                 self.__table__.create(session.get_bind())
+                
+                # Step 0: Add table references from db parameter (db is equivalent to 'inspector' referenced in their docs).
+                ObservationPeriod = db.tables['observation_period']
+                domain_table_dict.Condition.table = db.tables['condition_occurrence']
+                domain_table_dict.Procedure.table = db.tables['procedure']
+                domain_table_dict.Drug.table = db.tables['drug_exposure']
+                domain_table_dict.Device.table = db.tables['device_exposure']
 
                 # Step 1: Calculate prediction end date
                 prediction_end_date = self.training_end_date + relativedelta(months=self.gap_months+self.outcome_months) - timedelta(1)

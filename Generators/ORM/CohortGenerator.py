@@ -2,8 +2,6 @@ import pandas as pd
 from config import omop_schema, user_schema
 from sqlalchemy import Column, BigInteger, Integer, String
 
-# from ORMTables.cdm_6_0 import Base, ConditionOccurrence, ProcedureOccurrence, DrugExposure, DeviceExposure, ObservationPeriod
-
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
@@ -61,6 +59,24 @@ class CohortTable(Base):
         )
 
     def build(self, db, replace=False):
+        """
+        Build a Concept ID based OMOP cohort.
+        
+        Contains the logic to build a cohort, including:
+            1. Calculate a prediction window,
+            2. Identify person IDs that occur in the training and prediction windows,
+            3. Find person IDs that match inclusion OMOP concept IDs, 
+            4. Exclude person IDs that match exclusion OMOP concept IDs, and
+            5. Assign person IDs to labels based on dictionary of OMOP concept IDs.
+            
+        Parameters
+        ----------
+        db: One of the database classes defined in Utils.ORM, such as PostgresDatabase.
+        
+        Notes
+        -----
+        Does not return anything. However, populates a table, omop_learn_cohort, in a schema based on the value set in config.user_schema. Also stores a pandas dataframe of the results in _cohort.
+        """
         if replace:
             with db.session.session_manager() as session:
                 try:
@@ -70,12 +86,12 @@ class CohortTable(Base):
 
                 self.__table__.create(session.get_bind())
                 
-                # Step 0: Add table references from db parameter (db is equivalent to 'inspector' referenced in their docs).
-                ObservationPeriod = db.tables['observation_period']
-                domain_table_dict.Condition.table = db.tables['condition_occurrence']
-                domain_table_dict.Procedure.table = db.tables['procedure']
-                domain_table_dict.Drug.table = db.tables['drug_exposure']
-                domain_table_dict.Device.table = db.tables['device_exposure']
+                # Step 0: Add table references from db parameter (db contains an 'inspector', as referenced in InspectOMOP docs).
+                ObservationPeriod = db.inspector.tables['observation_period']
+                domain_table_dict.Condition.table = db.inspector.inspector.tables['condition_occurrence']
+                domain_table_dict.Procedure.table = db.inspector.tables['procedure']
+                domain_table_dict.Drug.table = db.inspector.tables['drug_exposure']
+                domain_table_dict.Device.table = db.inspector.tables['device_exposure']
 
                 # Step 1: Calculate prediction end date
                 prediction_end_date = self.training_end_date + relativedelta(months=self.gap_months+self.outcome_months) - timedelta(1)
@@ -210,7 +226,6 @@ class CohortTable(Base):
                 sel = select([cohort])
                 ins = self.__table__.insert().from_select(['person_id', 'start_date', 'end_date', 'outcome_date', 'y'], sel)
                 session.execute(ins)
-                
                 
         # Save a representation of our cohort into a local pandas data frame for use in feature generation code
         self._cohort = pd.read_sql("SELECT * FROM " + user_schema + ".omop_learn_cohort", db.engine)

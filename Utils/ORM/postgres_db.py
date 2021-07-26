@@ -1,15 +1,16 @@
-from sqlalchemy import create_engine
+import inspectomop as iomop
 from Utils.ORM.session_maker import SessionMaker
 
 class PostgresDatabase:
     def __init__(self, username, password, database_name = None, schema_name = None):
-        self.engine = create_engine(
+        self.inspector = iomop.Inspector(
             'postgresql://{username}:{password}@{database_name}'.format(
                 username = username,
                 password = password,
                 database_name = database_name
             )
         )
+        self.engine = self.inspector.engine
         self.session = SessionMaker(self.engine)
         self.schema_name = schema_name
         

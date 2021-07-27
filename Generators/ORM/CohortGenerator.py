@@ -7,8 +7,11 @@ from dateutil.relativedelta import relativedelta
 
 from sqlalchemy import func, and_, or_, union
 from sqlalchemy.sql.expression import select, literal, case
+from sqlalchemy.ext.declarative import declarative_base
 
-class CohortTable():
+Base = declarative_base()
+
+class CohortTable(Base):
     __tablename__ = 'omop_learn_cohort'
     __table_args__ = {
       'schema': user_schema
@@ -88,10 +91,10 @@ class CohortTable():
                 
                 # Step 0: Add table references from db parameter (db contains an 'inspector', as referenced in InspectOMOP docs).
                 ObservationPeriod = db.inspector.tables['observation_period']
-                domain_table_dict.Condition.table = db.inspector.inspector.tables['condition_occurrence']
-                domain_table_dict.Procedure.table = db.inspector.tables['procedure']
-                domain_table_dict.Drug.table = db.inspector.tables['drug_exposure']
-                domain_table_dict.Device.table = db.inspector.tables['device_exposure']
+                self.domain_table_dict['Condition']['table'] = db.inspector.tables['condition_occurrence']
+                self.domain_table_dict['Procedure']['table'] = db.inspector.tables['procedure_occurrence']
+                self.domain_table_dict['Drug']['table'] = db.inspector.tables['drug_exposure']
+                self.domain_table_dict['Device']['table'] = db.inspector.tables['device_exposure']
 
                 # Step 1: Calculate prediction end date
                 prediction_end_date = self.training_end_date + relativedelta(months=self.gap_months+self.outcome_months) - timedelta(1)

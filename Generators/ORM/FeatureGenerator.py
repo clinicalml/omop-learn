@@ -13,7 +13,6 @@ from sqlalchemy import union_all
 from sqlalchemy import String
 from sqlalchemy.sql.expression import select, join, text, case, cast
 from Generators.ORM.CohortGenerator import CohortTable
-from ORMTables.cdm_6_0 import ConditionOccurrence, ProcedureOccurrence, DrugExposure, VisitOccurrence, Provider, Concept
 from tqdm import tqdm
 
 import config 
@@ -84,6 +83,14 @@ class FeatureSet():
         self.concept_map_rev = None
         self.time_map = None
         self.time_map_rev = None
+        
+        # Map InspectOMOP tables to names we were already using with our own class definitions.
+        ConditionOccurrence = db.inspector.tables['condition_occurrence']
+        ProcedureOccurrence = db.inspector.tables['procedure_occurrence']
+        DrugExposure = db.inspector.tables['drug_exposure']
+        VisitOccurrence = db.inspector.tables['visit_occurrence']
+        Provider = db.inspector.tables['provider']
+        Concept = db.inspector.tables['concept']
         
         # SqlAlchemy feature definitions
         condition_features = select([

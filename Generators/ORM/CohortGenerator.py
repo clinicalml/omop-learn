@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import func, and_, or_, union
 from sqlalchemy.sql.expression import select, literal, case
 
-class CohortTable(Base):
+class CohortTable():
     __tablename__ = 'omop_learn_cohort'
     __table_args__ = {
       'schema': user_schema

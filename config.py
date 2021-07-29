@@ -16,4 +16,4 @@ SQL_PATH_FEATURES = 'sql/Features' # path to SQL scripts that generate features
 DEFAULT_SAVE_LOC = '/tmp/' # where to save temp files
 
 omop_schema = 'cdm'
-user_schema = 'nicu'
+user_schema = 'orm_eol'

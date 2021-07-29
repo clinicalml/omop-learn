@@ -12,7 +12,6 @@ import sparse
 from sqlalchemy import union_all
 from sqlalchemy import String
 from sqlalchemy.sql.expression import select, join, text, case, cast
-from Generators.ORM.CohortGenerator import CohortTable
 from tqdm import tqdm
 
 import config 
@@ -48,6 +47,7 @@ class FeatureSet():
     def __init__(
         self,
         db,
+        cohortClass,
         dtcols=(
             'feature_start_date',
             'person_start_date',
@@ -60,6 +60,7 @@ class FeatureSet():
         ):
         
         self._db = db
+        self.cohortClass = cohortClass
         self._dtcols = dtcols
         
         self.id_col = id_col
@@ -94,58 +95,58 @@ class FeatureSet():
         
         # SqlAlchemy feature definitions
         condition_features = select([
-            CohortTable.example_id, ConditionOccurrence.person_id, 
+            self.cohortClass.example_id, ConditionOccurrence.person_id, 
             (cast(ConditionOccurrence.condition_concept_id, String) + 
              ' - condition - ' + 
              case([(Concept.concept_name == None, 'no match')], else_ = Concept.concept_name)).label('concept_name'), 
             ConditionOccurrence.condition_start_datetime.label(dtcols[0]), 
-            CohortTable.start_date.label(dtcols[1]), 
-            CohortTable.end_date.label(dtcols[2])
+            self.cohortClass.start_date.label(dtcols[1]), 
+            self.cohortClass.end_date.label(dtcols[2])
         ])\
         .select_from(
-            join(ConditionOccurrence, CohortTable, ConditionOccurrence.person_id == CohortTable.person_id)\
+            join(ConditionOccurrence, self.cohortClass, ConditionOccurrence.person_id == self.cohortClass.person_id)\
             .join(Concept, Concept.concept_id == ConditionOccurrence.condition_concept_id)
         )
 
         procedure_features = select([
-            CohortTable.example_id, ProcedureOccurrence.person_id, 
+            self.cohortClass.example_id, ProcedureOccurrence.person_id, 
             (cast(ProcedureOccurrence.procedure_concept_id, String) + 
              ' - procedure - ' + 
              case([(Concept.concept_name == None, 'no match')], else_ = Concept.concept_name)).label('concept_name'), 
             ProcedureOccurrence.procedure_datetime.label(dtcols[0]), 
-            CohortTable.start_date.label(dtcols[1]), 
-            CohortTable.end_date.label(dtcols[2])
+            self.cohortClass.start_date.label(dtcols[1]), 
+            self.cohortClass.end_date.label(dtcols[2])
         ])\
         .select_from(
-            join(ProcedureOccurrence, CohortTable, ProcedureOccurrence.person_id == CohortTable.person_id)\
+            join(ProcedureOccurrence, self.cohortClass, ProcedureOccurrence.person_id == self.cohortClass.person_id)\
             .join(Concept, Concept.concept_id == ProcedureOccurrence.procedure_concept_id)
         )
 
         drug_features = select([
-            CohortTable.example_id, DrugExposure.person_id,
+            self.cohortClass.example_id, DrugExposure.person_id,
             (cast(DrugExposure.drug_concept_id, String) + 
              ' - drug - ' + 
              case([(Concept.concept_name == None, 'no match')], else_ = Concept.concept_name)).label('concept_name'), 
             DrugExposure.drug_exposure_start_datetime.label(dtcols[0]), 
-            CohortTable.start_date.label(dtcols[1]), 
-            CohortTable.end_date.label(dtcols[2])
+            self.cohortClass.start_date.label(dtcols[1]), 
+            self.cohortClass.end_date.label(dtcols[2])
         ])\
         .select_from(
-            join(DrugExposure, CohortTable, DrugExposure.person_id == CohortTable.person_id)\
+            join(DrugExposure, self.cohortClass, DrugExposure.person_id == self.cohortClass.person_id)\
             .join(Concept, Concept.concept_id == DrugExposure.drug_concept_id)
         )
 
         specialty_features = select([
-            CohortTable.example_id, VisitOccurrence.person_id,
+            self.cohortClass.example_id, VisitOccurrence.person_id,
             (cast(Provider.specialty_concept_id, String) + 
              ' - specialty - ' + 
              case([(Concept.concept_name == None, 'no match')], else_ = Concept.concept_name)).label('concept_name'), 
             VisitOccurrence.visit_start_date.label(dtcols[0]), 
-            CohortTable.start_date.label(dtcols[1]), 
-            CohortTable.end_date.label(dtcols[2])   
+            self.cohortClass.start_date.label(dtcols[1]), 
+            self.cohortClass.end_date.label(dtcols[2])   
         ])\
         .select_from(
-            join(VisitOccurrence, CohortTable, VisitOccurrence.person_id == CohortTable.person_id)\
+            join(VisitOccurrence, self.cohortClass, VisitOccurrence.person_id == self.cohortClass.person_id)\
             .join(Provider, VisitOccurrence.provider_id == Provider.provider_id)\
             .join(Concept, Concept.concept_id == Provider.specialty_concept_id)
         )

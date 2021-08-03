@@ -185,7 +185,7 @@ class FeatureSet():
                 union_stmt = session.query(union_all(*self._temporal_features).alias('u')).subquery('union_stmt')
                 result = session.query(union_stmt)\
                 .order_by(union_stmt.c[self.unique_id_col], union_stmt.c[self.time_col], union_stmt.c[self.feature_col])\
-                .yield_per(int(1e3))
+                .yield_per(int(2e6))
                 outcsv.writerow(x['name'] for x in result.column_descriptions) # Write header first
                 for row in result:
                     outcsv.writerow(row)
@@ -199,7 +199,7 @@ class FeatureSet():
         self.concepts = set()
         self.times = set()
         self.seen_ids=set()
-        chunksize = int(1e5) 
+        chunksize = int(2e6) 
         for chunk in pd.read_csv(store, chunksize=chunksize):
             self.concepts = self.concepts.union(set(chunk[self.feature_col].unique()))
             self.times = self.times.union(set(chunk[self.time_col].unique()))
@@ -237,7 +237,7 @@ class FeatureSet():
             coords[0].extend(chunk[self.feature_col].apply(self.concept_map_rev.get).tolist())
             coords[1].extend(chunk[self.time_col].apply(self.time_map_rev.get).tolist())
             coords[2].extend(chunk[self.unique_id_col].apply(self.id_map_rev.get).tolist())
-            csv_store.set_description('{:,.2f} MB consumed'.format(mb_used()))
+            csv_store.set_postfix_str('{:,.2f} MB'.format(mb_used()))
 
         self._spm_arr = sparse.COO(coords, 1, shape=(len(self.concepts), len(self.times), len(self.seen_ids)))
         print('Generated Sparse Representation of Data in {0:.2f} seconds'.format(

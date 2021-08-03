@@ -108,7 +108,7 @@ class EolCohortTable(Base):
                 
                 # Step 3: Calculate prediction window
                 prediction_start_date = self.training_end_date + relativedelta(months=self.gap_months)
-                prediction_end_date = self.training_end_date + relativedelta(months=self.gap_months+self.outcome_months) - timedelta(1)
+                prediction_end_date = self.training_end_date + relativedelta(months=self.gap_months+self.outcome_months)
 
                 # Step 4: Identify person IDs that occur during our training timeframe
                 least_end_date = case(

@@ -21,3 +21,5 @@ left join
     {cdm_schema}.concept c
 on 
     c.concept_id = p.specialty_concept_id
+where
+    a.visit_start_date <= b.end_date

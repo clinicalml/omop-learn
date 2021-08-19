@@ -12,11 +12,12 @@ import config
         
 class Database(object):  # noqa
 
-    def __init__(self, config_path, schema_name, echo=False): 
+    def __init__(self, config_path, schema_name, connect_args, cdm_schema_name, echo=False): 
         
         self.engine = sqlalchemy.create_engine(
             config_path,
             echo=echo,
+            connect_args=connect_args
         )
         self.meta = sqlalchemy.MetaData(
             bind=self.engine,
@@ -25,7 +26,7 @@ class Database(object):  # noqa
         self.cdmMeta = sqlalchemy.MetaData(
             bind=self.engine,
             reflect=True,
-            schema="cdm"
+            schema=cdm_schema_name
         )
         self.selfMeta = sqlalchemy.MetaData(
             bind=self.engine,

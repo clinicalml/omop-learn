@@ -151,6 +151,18 @@ featureSet.add_default_features(
     schema_name,
     cohort_name
 )
+```
+By default, the package assumes that added features are temporal in nature. omop-learn also supports nontemporal features, such as age and gender.
+```sql
+featureSet.add_default_features(
+    ['age','gender'],
+    schema_name,
+    cohort_name,
+    temporal=False
+)
+```
+Finally, we call the build() function, which executes the relevant feature queries to create the feature set.
+```sql
 featureSet.build(cohort, cache_file='eol_feature_matrix', from_cached=False)
 ```
 Since collecting the data is often the most time-consuming part of the setup process, we cache intermediate results in the `cache_name` file (if `from_cached` is False) and can later use this data instead of executing the relevant queries (if `from_cached` is True).
@@ -160,7 +172,7 @@ Additional customized features can also be created by advanced users, by adding 
 ### <a name="preprocess"></a> 2. Ingesting Feature Data
 Once we have called `build` on a `FeatureSet` object, omop-learn will begin collecting all the relevant data from the OMOP database. To efficiently store and manipulate this information, we use sparse tensors in COO format, with indices accessed via bi-directional hash maps. 
 
-The tensor itself can be accessed by calling `featureSet.get_sparr_rep()`. This object has three axes corresponding to patients, timestamps, and OMOP concepts respectively. The axes can be manipulated as outlined in the table below:
+For the temporal features, this tensor can be accessed by calling `featureSet.get_sparr_rep()`. This object has three axes corresponding to patients, timestamps, and OMOP concepts respectively. The axes can be manipulated as outlined in the table below:
 
 Axis | Index Maps | Description| Example Utilization
 -----|-----|-------|-----------------
@@ -180,7 +192,9 @@ feature_matrix_counts, feature_names = data_utils.window_data(
 ```
 This function takes in the raw sparse tensor of features, filters several times to collect data from the past `d` days for each `d` in `window_lengths`, then sums along the time axis to find the total count of the number of times each code was assigned to a patient over the last `d` days. These count matrices are then concatenated to each other to build a final feature set of windowed count features. Note that unlike a pure SQL implementation of this kind of feature, omop-learn can quickly rerun the analysis for a different set of windows -- this ability to tune the parameters allows us to use a validation set to determine optimal values and thus significantly increase model performance.  
 
-This feature matrix can then be used with any sklearn modelling pipeline -- see the [example notebook](https://github.com/clinicalml/omop-learn/blob/master/PL2%20Test%20Driver.ipynb) for an example pipeline involving some pre-processing followed by a heavily regularized logistic regression.
+This feature matrix can then be used with any sklearn modelling pipeline -- see the example notebook [End of Life Linear Model Example](https://github.com/clinicalml/omop-learn/blob/master/End%20of%20Life%20Linear%20Model%20Example.ipynb) for an example pipeline involving some pre-processing followed by a heavily regularized logistic regression. 
+
+For the nontemporal features, the 2d sparse feature matrix can be access by calling `featureSet.get_nontemporal_sparr_rep()`. This object has two axes corresponding to patients and OMOP concepts respectively. For an example involving nontemporal features, see the [End of Life Linear Model Example (With Nontemporal Features)](https://github.com/clinicalml/omop-learn/blob/master/End%20of%20Life%20Linear%20Model%20Example%20(With%20Nontemporal%20Features).ipynb).
 
 ## Code Documentation
 

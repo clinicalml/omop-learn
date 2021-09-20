@@ -15,3 +15,7 @@ SQL_PATH_FEATURES = 'sql/Features' # path to SQL scripts that generate features
 
 # Cache
 DEFAULT_SAVE_LOC = '/tmp/' # where to save temp files
+
+# Only used in ORM code
+omop_schema = 'cdm'
+user_schema = 'eol_cohort_comparison'

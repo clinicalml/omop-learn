@@ -36,7 +36,7 @@ with
                 ) - greatest(
                     o.observation_period_start_date,
                     date '{training_start_date}'
-                ), 0
+                ), '0 day'
             ) as num_days
         from {cdm_schema}.observation_period o
         inner join eligible_people p
@@ -50,7 +50,7 @@ with
         group by
             person_id
         having
-            sum(num_days) >= 0.95 * (date '{training_end_date}' - date '{training_start_date}')
+            sum(num_days) >= ((0.95 * (date '{training_end_date}' - date '{training_start_date}'))::text || ' days')::interval
     ),
     death_testperiod_elig_counts as (
         select
@@ -68,7 +68,7 @@ with
                     ) - greatest(
                         p.observation_period_start_date,
                         date '{training_end_date}'
-                    ), 0
+                    ), '0 day'
             ) as num_days
         from {cdm_schema}.observation_period p
         inner join 
@@ -91,12 +91,14 @@ with
             (d.death_datetime >= date '{training_end_date}' + interval '{gap}' and
              d.death_datetime <= date '{training_end_date}' + interval '{gap}' + interval '{outcome_window}') 
         or
-            sum(num_days) >= 0.95 * extract(
-                epoch from (
-                    interval '{gap}' 
-                    + interval '{outcome_window}' --epoch returns the number of seconds in gap + outcome_window
-                )
-            )/(24*60*60) --convert seconds to days
+            sum(num_days) >= ((
+                0.95 * extract(
+                    epoch from (
+                        interval '{gap}' 
+                        + interval '{outcome_window}' --epoch returns the number of seconds in gap + outcome_window
+                    )
+                )/(24*60*60)
+            )::text || ' days')::interval --convert seconds to days
     ) 
     
     select

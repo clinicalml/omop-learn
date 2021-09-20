@@ -158,6 +158,7 @@ class FeatureSet():
         self.seen_ids=set()
         chunksize = int(2e6) 
         for chunk in pd.read_csv(store, chunksize=chunksize):
+            chunk.dropna(subset=[self.feature_col], inplace=True)
             self.concepts = self.concepts.union(set(chunk[self.feature_col].unique()))
             self.times = self.times.union(set(chunk[self.time_col].unique()))
             self.seen_ids = self.seen_ids.union(set(chunk[self.unique_id_col].unique()))
@@ -188,6 +189,7 @@ class FeatureSet():
         spm_arr = []
         self.recorded_ids = set()
         for chunk_num, chunk in enumerate(pd.read_csv(store, chunksize=chunksize)):
+            chunk.dropna(subset=[self.feature_col], inplace=True)
             first = chunk.iloc[0][self.unique_id_col]
             vals = chunk[self.unique_id_col].unique()
             indices = np.searchsorted(chunk[self.unique_id_col], vals)
@@ -218,7 +220,6 @@ class FeatureSet():
                     spm_arr.append(spm_stored)
             spm_arr += spm_local[:-1]
             spm_stored = spm_local[-1]
-            # last = chunk.iloc[-1][sep_col]
             last = chunk.iloc[-1][self.unique_id_col]
         spm_arr.append(spm_stored)
         print(len(spm_arr))

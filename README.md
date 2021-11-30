@@ -41,6 +41,6 @@ To run the models, first set up the file `config.py` with connection information
 
 ## Contributors and Acknowledgements
 
-Omop-learn was written by Rohan Kodialam and Jake Marcus, with additional contributions by Rebecca Boiarsky, Ike Lage, and Shannon Hwang.
+Omop-learn was written by Rohan Kodialam and Jake Marcus, with additional contributions by Rebecca Boiarsky, Ike Lage, Shannon Hwang, Hunter Lang, Christina Ji, and Irene Chen.
 
-This package was developed as part of a collaboration with Independence Blue Cross and would not have been possible without the advice and support of Aaron Smith-McLallen, Ravi Chawla, Kyle Armstrong, Luogang Wei, and Jim Denyer.
+This package was developed as part of a collaboration with Independence Blue Cross and would not have been possible without the advice and support of Aaron Smith-McLallen, Ravi Chawla, Kyle Armstrong, Luogang Wei, Neil Dixit and Jim Denyer.

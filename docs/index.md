@@ -3,7 +3,7 @@
 
 ## Introductory Tutorial
 
-omop-learn allows [OMOP-standard (CDM v6)](https://github.com/OHDSI/CommonDataModel/wiki) medical data like Claims and EHR information to be processed efficiently for predictive tasks. The library allows users to precisely define cohorts of interest, patient-level time series features, and target variables of interest. Relevant data is automatically extracted and surfaced in formats suitable for most machine learning algorithms, and the (often extreme) sparsity of patient-level data is fully taken into account to provide maximum performance. 
+omop-learn allows [OMOP-standard (CDM v5 and v6)](https://github.com/OHDSI/CommonDataModel/wiki) medical data like Claims and EHR information to be processed efficiently for predictive tasks. The library allows users to precisely define cohorts of interest, patient-level time series features, and target variables of interest. Relevant data is automatically extracted and surfaced in formats suitable for most machine learning algorithms, and the (often extreme) sparsity of patient-level data is fully taken into account to provide maximum performance. 
 
 
 The library provides several benefits for modelling, both in terms of ease of use and performance:

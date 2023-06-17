@@ -24,10 +24,20 @@ BibTeX:
 
 ## Installation
 
-Run the following from the current directory:
+Dependencies for `omop-learn` are managed through an [environment.yml](./environment.yml) file. Run the following from the current directory to create the conda environment necessary to run the package:
 
     conda env create -f environment.yml
     conda activate omop-learn
     pip install .
 
-This installs the dependencies and omop-learn package into a conda environment `omop-learn`.
+This installs the dependencies and pip installs the `omop-learn` package into a conda environment `omop-learn`.
+
+## Documentation
+
+For a more detailed summary of omop-learn's data collection pipeline, and for documentation of functions, please see the full [documentation](https://clinicalml.github.io/omop-learn/) for this repo, which also describes the process of creating one's own cohorts, predictive tasks, and features. 
+
+## Contributors and Acknowledgements
+
+`omop-learn` was written by Rohan Kodialam and Jake Marcus, with additional contributions by Rebecca Boiarsky, Justin Lim, Ike Lage, Shannon Hwang, Hunter Lang, Christina Ji, Irene Chen, and Alejandro Buendia.
+
+This package was developed as part of a collaboration with Independence Blue Cross and would not have been possible without the advice and support of Aaron Smith-McLallen, Ravi Chawla, Kyle Armstrong, Luogang Wei, Neil Dixit, and Jim Denyer.

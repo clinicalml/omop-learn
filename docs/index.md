@@ -27,11 +27,11 @@ We define our end-of-life task as follows:
 `omop-learn` splits the conversion of this natural language specification of a task to code into two natural steps. First, we define a **cohort** of patients, each of which has an outcome. Second, we generate **features** for each of these patients. These two steps are kept independent of each other, allowing different cohorts or feature sets to very quickly be tested and evaluated. We explain how cohorts and features are initialized through the example of the end-of-life problem.
 
 #### 1.1 Data Backend Initialization
-`omop-learn` supports a collection of data [backend](https://github.com/clinicalml/omop-learn/tree/master/src/omop_learn/backends) engines depending on where the source OMOP tables are stored: PostgreSQL, Google BigQuery, and Apache Spark. The `PostgresBackend`, `BigQueryBackend`, and `SparkBackend` classes inherit from parent class `OMOPDatasetBackend` which defines the set of methods to interface with the data storage as well as the feature creation.
+`omop-learn` supports a collection of data [backend engines](https://github.com/clinicalml/omop-learn/tree/master/src/omop_learn/backends) depending on where the source OMOP tables are stored: PostgreSQL, Google BigQuery, and Apache Spark. The `PostgresBackend`, `BigQueryBackend`, and `SparkBackend` classes inherit from `OMOPDatasetBackend` which defines the set of methods to interface with the data storage as well as the feature creation.
 
-Configuration parameters used to initialize the backend are surfaced through `.env` files, for example [`bigquery.env`](https://github.com/clinicalml/omop-learn/blob/master/bigquery.env), which stores the name of the project in Google BigQuery, schemas to write the cohort to, as well as local directories to store feature data and trained models. The backend can then simply be created in Python as:
+Configuration parameters used to initialize the backend are surfaced through python `.env` files, for example [`bigquery.env`](https://github.com/clinicalml/omop-learn/blob/master/bigquery.env). For this example, the `.env` file stores the name of the project in Google BigQuery, schemas to read data from and write the cohort to, as well as local directories to store feature data and trained models. The backend can then simply be created in Python as:
 
-```sql
+```python
 load_dotenv("bigquery.env")
 
 config = Config({
@@ -142,7 +142,7 @@ Field | Meaning
 `start_date` and `end_date` | Columns indicating the beginning and end of the time periods to be used for data collection for this patient. This will be used downstream for feature generation. 
 
 We are now ready to build a cohort. We construct a [`Cohort`](https://github.com/clinicalml/omop-learn/blob/master/src/omop_learn/data/cohort.py) object by passing the path to a defining SQL script, the relevant data backend, and the set of cohort params.
-```sql
+```python
 cohort_params = {
     "cohort_table_name": "eol_cohort",
     "schema_name": config.prefix_schema,
@@ -161,66 +161,63 @@ cohort = Cohort.from_sql_file(sql_file, backend, params=cohort_params)
 #### <a name="define_features"></a> 1.3 Feature Initialization
 With a cohort now fully in place, we are ready to associate features with each patient in the cohort. These features will be used downstream to predict outcomes. 
 
-The OMOP Standardized Clinical Data tables offer several natural features for a patient, including histories of condition occurrence, procedures, etc. omop-learn includes SQL scripts to collect time-series of these common features automatically for any cohort, allowing a user to very quickly set up a feature set. To do so, we first initialize a `FeatureGenerator` object with a database indicating where feature data is to be found. Similar to the `CohortGenerator`, this does not actually create a feature set -- that is only done once all parameters are specified. We next select the pre-defined features of choice, and finally select a cohort for which data is to be collected:
-```sql
-featureSet = FeatureGenerator.FeatureSet(db)
-featureSet.add_default_features(
-    ['drugs','conditions','procedures'],
-    schema_name,
-    cohort_name
-)
-```
-By default, the package assumes that added features are temporal in nature. omop-learn also supports nontemporal features, such as age and gender.
-```sql
-featureSet.add_default_features(
-    ['age','gender'],
-    schema_name,
-    cohort_name,
-    temporal=False
-)
-```
-Finally, we call the build() function, which executes the relevant feature queries to create the feature set.
-```sql
-featureSet.build(cohort, cache_file='eol_feature_matrix', from_cached=False)
-```
-Since collecting the data is often the most time-consuming part of the setup process, we cache intermediate results in the `cache_name` file (if `from_cached` is False) and can later use this data instead of executing the relevant queries (if `from_cached` is True).
+The OMOP Standardized Clinical Data tables offer several natural features for a patient, including histories of condition occurrence, procedures, and drugs administered. `omop-learn` includes SQL scripts to collect time-series of these common features automatically for any cohort, allowing a user to quickly set up a feature set. We supply paths to the feature SQLs as well as the name of each feature in constructing features using the [`Feature`](https://github.com/clinicalml/omop-learn/blob/master/src/omop_learn/data/feature.py) object: 
+```python
+sql_dir = "examples/eol/bigquery_sql"
 
-Additional customized features can also be created by advanced users, by adding files to the [feature SQL directory](https://github.com/clinicalml/omop-learn/tree/master/sql/Features). The added queries should output rows in the same format as the existing SQL scripts.
+feature_paths = [f"{sql_dir}/drugs.sql"]
+feature_names = ["drugs"]
+features = [Feature(n, p) for n, p in zip(feature_names, feature_paths)]
+
+ntmp_feature_paths = [f"{sql_dir}/age.sql", f"{sql_dir}/gender.sql"]
+ntmp_feature_names = ["age", "gender"]
+features.extend([Feature(n, p, temporal=False) for n, p in zip(ntmp_feature_names, ntmp_feature_paths)])
+```
+By default, the package assumes that added features are temporal in nature, i.e. that observations are collected at a time interval for a patient. `omop-learn` also supports nontemporal features which are assumed to be static in nature for a given time period, such as age and gender. This is specified by setting the flag `temporal=False` in the construction of the `Feature` object.
+
+Finally, we create an `OMOPDataset` object to trigger creation of the features via the backend. Here we pass in initialization arguments which include the `Config` object used to specify backend parameters, the backend itself (e.g. `BigQueryBackend`), the previously created `Cohort` object, and the list of features storing `Feature` objects:
+```python
+init_args = {
+    "config" : config,
+    "name" : "bigquery_eol_cohort",
+    "cohort" : cohort,
+    "features": features,
+    "backend": backend,
+    "is_visit_dataset": False,
+    "num_workers": 10
+}
+
+dataset = OMOPDataset(**init_args)
+```
+Note that feature extraction outputs the set of features to local disk in the directory specified by `data_dir` into the initialization arguments (if left blank, this defaults to the directory supplied in the `.env` file). This directory outputs features in a `data.json` file, which defaults to storing a patient's features in a single json line. Here the features are stored as a list of lists in the json key `visits`, in which the outer list stores features for a given date, and the inner list stores the concepts that appeared on that day. The corresponding dates can be extracted from the patient line using the json key `dates`. Note also that `person_id` and static features such as `age` and `gender` are saved down into the json. The argument `is_visit_dataset=True` configures an alternative feature representation in which a single line of `data.json` represents a visit, rather than a patient.
+
+Feature extraction is written with python's `multiprocessing` library for enhanced performance; the `num_workers` argument can be used to configure the number of parallel processes. Additional customized features can also be created by adding additional files to the [feature SQL directory](https://github.com/clinicalml/omop-learn/tree/master/examples/eol/bigquery_sql). The added queries should output rows in the same format as the existing SQL scripts.
 
 ### <a name="preprocess"></a> 2. Ingesting Feature Data
-Once we have called `build` on a `FeatureSet` object, omop-learn will begin collecting all the relevant data from the OMOP database. To efficiently store and manipulate this information, we use sparse tensors in COO format, with indices accessed via bi-directional hash maps. 
+Once features are created using the `OMOPDataset` object, `omop-learn` uses sparse tensors in COO format to aggregate features for use in models, with indices accessed via bi-directional hash maps. These are interfaced through the `OMOPDatasetSparse` class.
 
-For the temporal features, this tensor can be accessed by calling `featureSet.get_sparr_rep()`. This object has three axes corresponding to patients, timestamps, and OMOP concepts respectively. The axes can be manipulated as outlined in the table below:
+For temporal features, this tensor can be accessed through the variable `OMOPDatasetSparse.feature_tensor`. This object has three axes corresponding to patients, timestamps, and OMOP concepts respectively.
 
-Axis | Index Maps | Description| Example Utilization
------|-----|-------|-----------------
-Patient | `featureSet.id_map` and `featureSet.id_map_rev` | Each index corresponds to a patient in the cohort. The data for the patient with id `a` will be at index `featureSet.id_map_rev[a]` and likewise index `b` corresponds to the patient with id `fearureSet.id_map[b]`.| To get data for patients whose patient ID's are in the list `filtered_ids`, we would find the relevant indices by running `filtered_indices = [featureSet.id_map_rev[id] for id in filtered_ids]`, then indexing into Patient axis of the sparse tensor with `filtered_tensor = featureSet.get_sparr_rep()[filtered_indices, :, :]`.
-Time | `featureSet.time_map` and `featureSet.concept_map_rev` | Each index corresponds to a unique timestamp. At present, the data we use comes in at daily ticks, so each index corresponds to a day on which an OMOP code was assigned to a patient. The index corresponding to timestamp `t` is `featureSet.time_map_rev[t]` and the timestamp corresponding to index `i` is `featureSet.time_map[i]`. | To get data from April 2016 onwards only, we can filter the indices of the time axis by running `time_indices_filtered = [i for i in featureSet.time_map if featureSet.time_map[i] > pd.to_datetime('2017-4-1')]`, then index into the sparse tensor along the time axis : `filtered_tensor = featureSet.get_sparr_rep()[:, time_indices_filtered, :]`.
-OMOP Concept | `featureSet.concept_map` and `featureSet.concept_map_rev` | Each index corresponds to a unique OMOP concept. The index corresponding to concept `c` is `featureSet.concept_map_rev[c]` and the timestamp corresponding to index `i` is `featureSet.concept_map[i]`. | To get data for all codes where an OMOP concept is matched, we would want to exclude codes that map to "no matching concept". We can get the indices corresponding to the non-excluded codes with `feature_indices_filtered = [i for i in featureSet.concept_map if '- No matching concept' not in featureSet.concept_map[i]]`, then indexing in with `filtered_tensor = featureSet.get_sparr_rep()[:, :, feature_indices_filtered]`.
+In our EOL example, we will filter on both time and concept axes. We filter on the concept axis exactly as above, removing OMOP's catch-all "no matching concept" buckets since they don't correspond to any real medical feature. We create features by collecting counts of how many times each OMOP code has been applied to a patient over the last `d` days for several values of `d`, and then concatenating these varibales together into a feature vector. Thus for each backwards-looking window `d` we must create a seperate time filter. This filtering is executed using the `OMOPDatasetWindowed` class by calling `to_windowed()`. 
+```python
+# Re-load a pre-built dataset
+dataset = OMOPDataset.from_prebuilt(config.datasets_dir)
 
-In our EOL example, we will filter on both time and concept axes. We filter on the concept axis exactly as above, removing OMOP's catch-all "no matching concept" buckets since they don't correspond to any real medical feature. We create features by collecting counts of how many times each OMOP code has been applied to a patient over the last `T` days for several values of `T`, and then concatenating these varibales together into a feature vector. Thus for each backwards-looking window `T` we must create a seperate time filter -- this advanced filtering is already pre-coded into omop-learn and can be called as follows:
-```sql
-feature_matrix_counts, feature_names = data_utils.window_data(
-    window_lengths = [30, 180, 365, 730],
-    feature_matrix = feature_matrix_3d,
-    all_feature_names = good_feature_names,
-    cohort = cohort,
-    featureSet = featureSet
+# Window the omop dataset and split it
+window_days = [30, 180, 365, 730, 1500, 5000, 10000]
+windowed_dataset = dataset.to_windowed(window_days)
+windowed_dataset.split()
 )
 ```
-This function takes in the raw sparse tensor of features, filters several times to collect data from the past `d` days for each `d` in `window_lengths`, then sums along the time axis to find the total count of the number of times each code was assigned to a patient over the last `d` days. These count matrices are then concatenated to each other to build a final feature set of windowed count features. Note that unlike a pure SQL implementation of this kind of feature, omop-learn can quickly rerun the analysis for a different set of windows -- this ability to tune the parameters allows us to use a validation set to determine optimal values and thus significantly increase model performance.  
+The `to_windowed()` function takes in the raw sparse tensor of features, filters several times to collect data from the past `d` days for each `d` in `window_lengths`, then sums along the time axis to find the total count of the number of times each code was assigned to a patient over the last `d` days. These count matrices are then concatenated to build a final feature set of windowed count features. Note that unlike a pure SQL implementation of this kind of feature, `omop-learn` can quickly rerun the analysis for a different set of windows; this ability to tune parameters allows use of a validation set to determine optimal values and thus significantly increase model performance. Note that we can also easily split the windowed data into train, validation, and test sets by calling the method `split()` on the windowed dataset in evaluating model performance.
 
-This feature matrix can then be used with any sklearn modelling pipeline -- see the example notebook [End of Life Linear Model Example](https://github.com/clinicalml/omop-learn/blob/master/End%20of%20Life%20Linear%20Model%20Example.ipynb) for an example pipeline involving some pre-processing followed by a heavily regularized logistic regression. 
-
-For the nontemporal features, the 2d sparse feature matrix can be access by calling `featureSet.get_nontemporal_sparr_rep()`. This object has two axes corresponding to patients and OMOP concepts respectively. For an example involving nontemporal features, see the [End of Life Linear Model Example (With Nontemporal Features)](https://github.com/clinicalml/omop-learn/blob/master/End%20of%20Life%20Linear%20Model%20Example%20(With%20Nontemporal%20Features).ipynb).
-
-## Code Documentation
-
-Code documentation can be accessed [here](/omop-learn/sphinx/)
 
 ## Files
-### config.py
-This file contains global constants and the parameters needed to connect to a postgres database in which OMOP data is stored. The password field has been reset and must be entered to run the code
+
+We review the subdirectories in the source package. 
+
+### backends
+The set of backends interfaces with the data storage
 
 
 ### Utils

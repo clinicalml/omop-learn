@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>CohortGenerator module</title>
+    
+      <link rel="stylesheet" href="static/pygments.css">
+      <link rel="stylesheet" href="static/theme.css">
+      <link rel="stylesheet" href="static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script type="text/javascript" src="static/jquery.js"></script>
+        <script type="text/javascript" src="static/underscore.js"></script>
+        <script type="text/javascript" src="static/doctools.js"></script>
+        <script type="text/javascript" src="static/language_data.js"></script>
+
+      
+      <script src="static/theme-vendors.js"></script>
+      <script src="static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="index.html" class="home-link">
+    
+      <span class="site-name">omop-learn</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+    
+    <li>CohortGenerator module</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <div class="section" id="module-Generators.CohortGenerator">
+<span id="cohortgenerator-module"></span><h1>CohortGenerator module<a class="headerlink" href="#module-Generators.CohortGenerator" title="Permalink to this headline">¶</a></h1>
+<p>Cohort Generator Module</p>
+<p>This module manages code for defining and materializing cohorts of patients
+for medical prediction tasks.</p>
+<dl class="class">
+<dt id="Generators.CohortGenerator.Cohort">
+<em class="property">class </em><code class="sig-prename descclassname">Generators.CohortGenerator.</code><code class="sig-name descname">Cohort</code><span class="sig-paren">(</span><em class="sig-param">schema_name=''</em>, <em class="sig-param">cohort_table_name=None</em>, <em class="sig-param">cohort_generation_script=None</em>, <em class="sig-param">cohort_generation_kwargs=None</em>, <em class="sig-param">first=None</em>, <em class="sig-param">verbose=True</em>, <em class="sig-param">outcome_col_name='y'</em><span class="sig-paren">)</span><a class="headerlink" href="#Generators.CohortGenerator.Cohort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An object to hold cohort definitions and materialize cohort tables.</p>
+<p>This class serves two purposes. First, by setting <cite>cohort_generation_script</cite> and <cite>cohort_generation_kwargs</cite>,
+the rules by which a cohort is defined are laid out. Second, by calling the <cite>build</cite> method and passing in a
+OMOP standard database, these rules are applied to retrieve an actual table of cohort members and outcomes which can
+be used for downstream tasks</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cohort_generation_script</strong> (<em>str</em>) – A path to a SQL file containing a script to generate the cohort. This script may contain templated terms in the form <cite>{param}</cite>.</p></li>
+<li><p><strong>cohort_generation_kwargs</strong> (<em>dict</em>) – Keyword arguments to format any templated terms in the SQL script found at <cite>cohort_generation_script</cite>.</p></li>
+<li><p><strong>first</strong> (<em>int</em>) – Limit the cohort to the first <cite>first</cite> patients satisfying the cohort definition. This allows for faster prototyping.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="Generators.CohortGenerator.Cohort.build">
+<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">replace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Generators.CohortGenerator.Cohort.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Materialize the cohort table in database <cite>db</cite> using the script provided at initialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>db</strong> (<a class="reference internal" href="dbutils.html#Utils.dbutils.Database" title="Utils.dbutils.Database"><em>Utils.dbutils.Database</em></a>) – The database on which queries are to be run</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Generators.CohortGenerator.Cohort.get_num_examples">
+<code class="sig-name descname">get_num_examples</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Generators.CohortGenerator.Cohort.get_num_examples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the size of the cohort.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The number of patients in the cohort, returns a value of 0 if the cohort has not yet been materialized.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Generators.CohortGenerator.Cohort.is_built">
+<code class="sig-name descname">is_built</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Generators.CohortGenerator.Cohort.is_built" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether or not the cohort has been materialized yet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A boolean representing whether or not the cohort has been materialized yet</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Rohan Kodialam.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

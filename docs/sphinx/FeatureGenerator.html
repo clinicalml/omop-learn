@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>FeatureGenerator module</title>
+    
+      <link rel="stylesheet" href="static/pygments.css">
+      <link rel="stylesheet" href="static/theme.css">
+      <link rel="stylesheet" href="static/sphinx_press_theme.css">
+      
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="static/documentation_options.js"></script>
+
+      <!-- sphinx script_files -->
+        <script type="text/javascript" src="static/jquery.js"></script>
+        <script type="text/javascript" src="static/underscore.js"></script>
+        <script type="text/javascript" src="static/doctools.js"></script>
+        <script type="text/javascript" src="static/language_data.js"></script>
+
+      
+      <script src="static/theme-vendors.js"></script>
+      <script src="static/theme.js" defer></script>
+    
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" /> 
+  </head>
+
+  <body>
+    <div id="app" class="theme-container" :class="pageClasses"><navbar @toggle-sidebar="toggleSidebar">
+  <router-link to="index.html" class="home-link">
+    
+      <span class="site-name">omop-learn</span>
+    
+  </router-link>
+
+  <div class="links">
+    <navlinks class="can-hide">
+
+
+
+    </navlinks>
+  </div>
+</navbar>
+
+      
+      <div class="sidebar-mask" @click="toggleSidebar(false)">
+      </div>
+        <sidebar @toggle-sidebar="toggleSidebar">
+          
+          <navlinks>
+            
+
+
+
+            
+          </navlinks><div id="searchbox" class="searchbox" role="search">
+  <div class="caption"><span class="caption-text">Quick search</span>
+    <div class="searchformwrapper">
+      <form class="search" action="search.html" method="get">
+        <input type="text" name="q" />
+        <input type="submit" value="Search" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+    </div>
+  </div>
+</div><div class="sidebar-links" role="navigation" aria-label="main navigation">
+  
+</div>
+        </sidebar>
+
+      <page>
+          <div class="body-header" role="navigation" aria-label="navigation">
+  
+  <ul class="breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+    
+    <li>FeatureGenerator module</li>
+  </ul>
+  
+
+  <ul class="page-nav">
+</ul>
+  
+</div>
+<hr>
+          <div class="content" role="main">
+            
+  <div class="section" id="module-Generators.FeatureGenerator">
+<span id="featuregenerator-module"></span><h1>FeatureGenerator module<a class="headerlink" href="#module-Generators.FeatureGenerator" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="Generators.FeatureGenerator.Feature">
+<em class="property">class </em><code class="sig-prename descclassname">Generators.FeatureGenerator.</code><code class="sig-name descname">Feature</code><span class="sig-paren">(</span><em class="sig-param">feature_sql_file</em>, <em class="sig-param">feature_sql_params</em>, <em class="sig-param">temporal=True</em><span class="sig-paren">)</span><a class="headerlink" href="#Generators.FeatureGenerator.Feature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A single time-series based feature to be used for modelling.</p>
+<p>This class serves as a wrapper for a SQL script used to collect a single set of features (such as a time series of diagnoses)
+for each of the members of a cohort. Note that the cohort is not specified here, and only needs to be specified just before actually collecting data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_sql_file</strong> (<em>str</em>) – A path to a SQL file containing a script to generate the feature. This script may contain templated terms in the form <cite>{param}</cite>.</p></li>
+<li><p><strong>feature_sql_params</strong> (<em>dict</em>) – Keyword arguments to format any templated terms in the SQL script found at <cite>feature_sql_file</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="Generators.FeatureGenerator.FeatureSet">
+<em class="property">class </em><code class="sig-prename descclassname">Generators.FeatureGenerator.</code><code class="sig-name descname">FeatureSet</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">dtcols=('feature_start_date'</em>, <em class="sig-param">'person_start_date'</em>, <em class="sig-param">'person_end_date')</em>, <em class="sig-param">id_col='person_id'</em>, <em class="sig-param">time_col='feature_start_date'</em>, <em class="sig-param">feature_col='concept_name'</em><span class="sig-paren">)</span><a class="headerlink" href="#Generators.FeatureGenerator.FeatureSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A collection of features to be used for modelling</p>
+<p>This class contains a group of <cite>Feature</cite> objects, and coordinates gathering each of these features for a cohort of patients and formatting
+the collected data into an efficient format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>db</strong> (<em>Utils.dbutils.Database</em>) – The database from which the features are to be extracted.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="Generators.FeatureGenerator.FeatureSet.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">feature</em><span class="sig-paren">)</span><a class="headerlink" href="#Generators.FeatureGenerator.FeatureSet.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new Feature object to the FeatureSet (only temporal features supported for now)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>feature</strong> (<a class="reference internal" href="#Generators.FeatureGenerator.Feature" title="Generators.FeatureGenerator.Feature"><em>Feature</em></a>) – The feature to add</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Generators.FeatureGenerator.FeatureSet.add_default_features">
+<code class="sig-name descname">add_default_features</code><span class="sig-paren">(</span><em class="sig-param">default_features</em>, <em class="sig-param">schema_name=None</em>, <em class="sig-param">cohort_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#Generators.FeatureGenerator.FeatureSet.add_default_features" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Generators.FeatureGenerator.FeatureSet.build">
+<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param">cohort</em>, <em class="sig-param">cache_file='/tmp/store.csv'</em>, <em class="sig-param">from_cached=False</em><span class="sig-paren">)</span><a class="headerlink" href="#Generators.FeatureGenerator.FeatureSet.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populate a feature set using the features in self._temporal_features. This function call will actually collect the dataset, and thus incur significant runtime.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cohort</strong> (<a class="reference internal" href="CohortGenerator.html#Generators.CohortGenerator.Cohort" title="Generators.CohortGenerator.Cohort"><em>Generators.CohortGenerator.Cohort</em></a>) – The cohort whose members data will be collected for.</p></li>
+<li><p><strong>cache_file</strong> (<em>str</em>) – A location to store a raw dump of data generated by feature SQL queries</p></li>
+<li><p><strong>from_cached</strong> (<em>bool</em>) – Try to load data directly from cache_file rather than first populating it by running SQL scripts</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Generators.FeatureGenerator.FeatureSet.get_feature_names">
+<code class="sig-name descname">get_feature_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Generators.FeatureGenerator.FeatureSet.get_feature_names" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Generators.FeatureGenerator.FeatureSet.get_num_features">
+<code class="sig-name descname">get_num_features</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Generators.FeatureGenerator.FeatureSet.get_num_features" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Generators.FeatureGenerator.FeatureSet.get_sparr_rep">
+<code class="sig-name descname">get_sparr_rep</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Generators.FeatureGenerator.FeatureSet.get_sparr_rep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the sparse array representation (if it is populated by self.build())
+:returns: A sparse array of data if populated, else None</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          <div class="page-nav">
+            <div class="inner"><ul class="page-nav">
+</ul><div class="footer" role="contentinfo">
+      &#169; Copyright 2020, Rohan Kodialam.
+    <br>
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1 with <a href="https://github.com/schettino72/sphinx_press_theme">Press Theme</a>.
+</div>
+            </div>
+          </div>
+      </page>
+    </div>
+    
+    
+  </body>
+</html>

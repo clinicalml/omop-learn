@@ -3,7 +3,7 @@
 
 ## Introductory Tutorial
 
-`omop-learn` allows [OMOP-standard (CDM v5 and v6)](https://github.com/OHDSI/CommonDataModel/wiki) medical data like claims and EHR information to be processed efficiently for predictive tasks. The library allows users to precisely define cohorts of interest, patient-level time series features, and target variables of interest. Relevant data is automatically extracted and surfaced in formats suitable for most machine learning algorithms, and the (often extreme) sparsity of patient-level data is fully taken into account to provide maximum performance. 
+`omop-learn` allows [OMOP-standard (CDM v5.3 and v6)](https://github.com/OHDSI/CommonDataModel/wiki) medical data like claims and EHR information to be processed efficiently for predictive tasks. The library allows users to precisely define cohorts of interest, patient-level time series features, and target variables of interest. Relevant data is automatically extracted and surfaced in formats suitable for most machine learning algorithms, and the (often extreme) sparsity of patient-level data is fully taken into account to provide maximum performance. 
 
 The library provides several benefits for modeling, both in terms of ease of use and performance:
 * All that needs to be specified are cohort and outcome definitions, which can often be done using simple SQL queries.
@@ -12,7 +12,7 @@ The library provides several benefits for modeling, both in terms of ease of use
 
 `omop-learn` serves as a modern python alternative to the [PatientLevelPrediction R library](https://github.com/OHDSI/PatientLevelPrediction). We allow seamless integration of many Python-based machine learning and data science libraries by supporting generic `sklearn`-style classifiers. Our new data storage paradigm also allows for more on-the-fly feature engineering as compared to previous libraries. 
 
-In this tutorial, we walk through the process of using `omop-learn` for an end-of-life prediction task for Medicare patients with clear applications to improving palliative care. The code used can also be found in the [example notebook](https://github.com/clinicalml/omop-learn/blob/master/examples/eol/sard_eol.ipynb), and can be run on your own data as you explore `omop-learn`. The control flow diagram below also links to relevant sections of the library documentation.
+In this tutorial, we walk through the process of using `omop-learn` for an end-of-life prediction task for synthetic Medicare patients with clear applications to improving palliative care. The code used can also be found in the [example notebook](https://github.com/clinicalml/omop-learn/blob/master/examples/eol/sard_eol.ipynb), and can be run on your own data as you explore `omop-learn`. The control flow diagram below also links to relevant sections of the library documentation.
 <center>
 <div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#006633&quot;,&quot;lightbox&quot;:false,&quot;nav&quot;:false,&quot;resize&quot;:true,&quot;xml&quot;:&quot;&lt;mxfile host=\&quot;www.draw.io\&quot; modified=\&quot;2020-01-27T20:09:03.888Z\&quot; agent=\&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36\&quot; etag=\&quot;8otv9sNdF-oivO5T6t3e\&quot; version=\&quot;12.5.8\&quot; type=\&quot;device\&quot;&gt;&lt;diagram id=\&quot;C5RBs43oDa-KdzZeNtuy\&quot; name=\&quot;Page-1\&quot;&gt;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&lt;/diagram&gt;&lt;/mxfile&gt;&quot;}"></div>
 <script type="text/javascript" src="https://www.draw.io/js/viewer.min.js"></script>
@@ -22,14 +22,14 @@ To formally specify our task, we require a set of rules to decide who is include
 ![Diagram of a Predictive Task Specification](https://i.imgur.com/P03wz6X.png)
 We define our end-of-life task as follows:
 
-> For each patient who is over the age of 70 at prediction time, and is enrolled in an insurance plan for which we have claims data available for 95% of the days of calendar year 2016, and is alive as of March 31, 2017: predict if the patient will die during the interval of time between April 1, 2017 and September 31, 2017 using data including the drugs prescribed, procedures performed, conditions diagnosed and the medical specialties of the clinicians who cared for the patient during 2016.
+> For each patient who is over the age of 70 at prediction time, and is enrolled in an insurance plan for which we have claims data available for 95% of the days of calendar year 2009, and is alive as of March 31, 2010: predict if the patient will die during the interval of time between April 1, 2010 and September 31, 2010 using data including the drugs prescribed, procedures performed, and conditions diagnosed during the year 2009.
 
 `omop-learn` splits the conversion of this natural language specification of a task to code into two natural steps. First, we define a **cohort** of patients, each of which has an outcome. Second, we generate **features** for each of these patients. These two steps are kept independent of each other, allowing different cohorts or feature sets to very quickly be tested and evaluated. We explain how cohorts and features are initialized through the example of the end-of-life problem.
 
 #### 1.1 Data Backend Initialization
 `omop-learn` supports a collection of data [backend engines](https://github.com/clinicalml/omop-learn/tree/master/src/omop_learn/backends) depending on where the source OMOP tables are stored: PostgreSQL, Google BigQuery, and Apache Spark. The `PostgresBackend`, `BigQueryBackend`, and `SparkBackend` classes inherit from `OMOPDatasetBackend` which defines the set of methods to interface with the data storage as well as the feature creation.
 
-Configuration parameters used to initialize the backend are surfaced through python `.env` files, for example [`bigquery.env`](https://github.com/clinicalml/omop-learn/blob/master/bigquery.env). For this example, the `.env` file stores the name of the project in Google BigQuery, schemas to read data from and write the cohort to, as well as local directories to store feature data and trained models. The backend can then simply be created in Python as:
+Configuration parameters used to initialize the backend are surfaced through python `.env` files, for example [`bigquery.env`](https://github.com/clinicalml/omop-learn/blob/master/bigquery.env). For this example, the `.env` file stores the name of the project in Google BigQuery, schemas to read data from and write the cohort to, as well as local directories to store feature data and trained models. The backend can then simply be created as:
 
 ```python
 load_dotenv("bigquery.env")
@@ -54,24 +54,24 @@ We first want to establish when patients were enrolled in insurance plans which 
 ```sql
 death_training_elig_counts as (
         select
-            person_id,
-            observation_period_start_date as start,
-            observation_period_end_date as finish,
+            o.person_id,
+            o.observation_period_start_date as start,
+            o.observation_period_end_date as finish,
             greatest(
-                least (
-                    observation_period_end_date,
-                    date '{ training_end_date }'
-                ) - greatest(
-                    observation_period_start_date,
-                    date '{ training_start_date }'
+                date_diff(
+                    least(o.observation_period_end_date, date '{training_end_date}'), 
+                    greatest(o.observation_period_start_date, date '{training_start_date}'),
+                    day
                 ), 0
             ) as num_days
-        from cdm.observation_period
+        from {cdm_schema}.observation_period o
+        inner join eligible_people p
+        on o.person_id = p.person_id
     )
 ```
 Note that the dates are left as template strings that can be filled later on. Next, we want to filter for patients who are enrolled for 95% of the days in our data collection period. Note that we must be careful to include patients who used multiple different insurance plans over the course of the year by aggregating the intermediate table `death_training_elig_counts` which is specified above. Thus, we first aggregate and then collect the `person_id` field for patients with sufficient coverage over the data collection period:
 ```sql
-    death_trainingwindow_elig_perc as (
+death_trainingwindow_elig_perc as (
         select
             person_id
         from
@@ -79,7 +79,7 @@ Note that the dates are left as template strings that can be filled later on. Ne
         group by
             person_id
         having
-            sum(num_days) >= 0.95 * (date '{ training_end_date }' - date '{ training_start_date }')
+            sum(num_days) >= 0.95 * extract(day from (date '{training_end_date}' - date '{training_start_date}'))
     )
 ```
 The next step is to find outcomes. 
@@ -87,50 +87,54 @@ The next step is to find outcomes.
 death_dates as (
         select
             p.person_id,
-            p.death_datetime
+            a.death_date
         from
-            cdm.person p
+            {cdm_schema}.person p
+        inner join
+            {cdm_schema}.death a
+        on
+            p.person_id = a.person_id
     )
 ```
 Then, we select for patients over the age of 70 at prediction time:
 ```sql
 eligible_people as (
         select p.person_id
-        from cdm.person p
+        from {cdm_schema}.person p
         where extract(
             year from date '{training_end_date}'
         ) - p.year_of_birth > 70
-    ),
+    )
 ```
 Finally, we can create the cohort:
 ```sql
-    select
-        row_number() over (order by p.person_id) - 1 as example_id,
-        p.person_id,
-        date '{ training_start_date }' as start_date,
-        date '{ training_end_date }' as end_date,
-        d.death_datetime as outcome_date,
-        coalesce(
-            (d.death_datetime between
-                date '{ training_end_date }'
-                 + interval '{ gap }'
+select
+        row_number() over (order by te.person_id) - 1 as example_id,
+        te.person_id,
+        date '{training_start_date}' as start_date,
+        date '{training_end_date}' as end_date,
+        d.death_date as outcome_date,
+
+        cast(coalesce(
+            (d.death_date between
+                date '{training_end_date}'
+                 + interval {gap}
                 and
-                date '{ training_end_date }'
-                 + interval '{ gap }'
-                 + interval '{ outcome_window }'
+                date '{training_end_date}'
+                 + interval {gap}
+                 + interval {outcome_window}
             ), false
-        )::int as y
+        ) as int) as y
     from
-        eligible_people p
-        inner join death_testwindow_elig_perc te on te.person_id = p.person_id
-        left join death_dates d on d.person_id = p.person_id
+        death_testwindow_elig_perc te
+        left join death_dates d on d.person_id = te.person_id
     where
         (
-            d.death_datetime is null
-            or d.death_datetime >= (date '{ training_end_date }' + interval '{ gap }')
+            d.death_date is null
+            or d.death_date >= (date '{training_end_date}' + interval {gap})
         )
 ```
-The full cohort creation SQL query can be found [here](https://github.com/clinicalml/omop-learn/blob/master/examples/eol/postgres_sql/gen_EOL_cohort.sql).
+The full cohort creation SQL query can be found [here](https://github.com/clinicalml/omop-pkg/blob/main/examples/eol/bigquery_sql/gen_EOL_cohort.sql).
 
 Note the following key fields in the resulting table:
 
@@ -148,12 +152,12 @@ cohort_params = {
     "schema_name": config.prefix_schema,
     "cdm_schema": config.cdm_schema,
     "aux_data_schema": config.aux_cdm_schema,
-    "training_start_date": "2016-01-01",
-    "training_end_date": "2017-01-01",
-    "gap": "3 months",
-    "outcome_window": "6 months",
+    "training_start_date": "2009-01-01",
+    "training_end_date": "2009-12-31",
+    "gap": "3 month",
+    "outcome_window": "6 month",
 }
-sql_dir = "examples/eol/postgres_sql"
+sql_dir = "examples/eol/bigquery_sql"
 sql_file = open(f"{sql_dir}/gen_EOL_cohort.sql", 'r')
 cohort = Cohort.from_sql_file(sql_file, backend, params=cohort_params)
 ```
@@ -213,38 +217,38 @@ The `to_windowed()` function takes in the raw sparse tensor of features, filters
 
 ## Files
 
-We review the subdirectories in the source package for `omop-learn`(https://github.com/clinicalml/omop-learn/tree/master/src/omop_learn).
+We review the subdirectories in the source package for [`omop-learn`](https://github.com/clinicalml/omop-learn/tree/master/src/omop_learn).
 
-### `backends`
+### backends
 
 The set of backends interfaces with the data storage and the compute engine to run feature extraction. We support PostgreSQL, Google BigQuery, and Apache Spark. The set of defining methods are inherited from `OMOPDatasetBackend`. Note that backend feature creation leverages python's `multiprocessing` library to extract features, parallelized by OMOP `person_id`.
 
-### `data`
+### data
 
 Data methods include the `Cohort`, `Feature`, and `ConceptTokenizer` classes. Cohort and features can be initialized using the previously reviewed code snippets. 
 
 The `ConceptTokenizer` class offers a compact representation for storing the set of relevant OMOP concepts by providing a mapping from concept index to name. This class also includes a set of special tokens, including beginning of sequence, end of sequence, separator, pad, and unknown, for use with language modeling applications.
 
 
-### `hf`
+### hf
 
 Utilities for interface with [Hugging Face libraries](https://huggingface.co/) are provided. This includes a mapping from the `OMOPDataset` object to those ingestible by Hugging Face models.
 
 
-### `models`
+### models
 
 The files `transformer.py` and `visit_transformer.py` provide modeling methods used to create the SARD architecture [Kodialam et al. 2021]. The methods in `transformer.py` define transformer blocks and multi-head attention in the standard way. The methods in `visit_transformer.py` defines a transformer-based architecture over visits consisting of OMOP concepts.
 
 
-### `sparse`
+### sparse
 
 The classes in `sparse` allow for end-to-end modeling over the created feature representation using sparse tensors in COO format. `data.py` defines the previously reviewed `OMOPDatasetSparse` and `OMOPDatasetWindowed` classes which aggregate features over multiple time windows. `models.py` defines a wrapper over the `sklearn` `LogisticRegression` object, which integrates tightly with the `OMOPDatasetWindowed` class.
 
-### `torch`
+### torch
 
 The classes in `data.py` define a wrapper around the `OMOPDataset` object for use with pytorch tensors. Similar to the classes in `hf` this allows for quick modeling with `torch` code. `models.py` gives some example models that can ingest `OMOPDatasetTorch` objects, including an alternate implementation for the `VisitTransformer`.
 
-### `utils`
+### utils
 
 A variety of `utils` are provided which support both data ingestion and modeling. `config.py` defines a simple configuration object for use in constructing the backend, while methods in `date_utils.py` are used for conversion between unix timestamps and datetime objects.
 

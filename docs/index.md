@@ -22,7 +22,7 @@ To formally specify our task, we require a set of rules to decide who is include
 ![Diagram of a Predictive Task Specification](https://i.imgur.com/P03wz6X.png)
 We define our end-of-life task as follows:
 
-> For each patient who is over the age of 70 at prediction time, and is enrolled in an insurance plan for which we have claims data available for 95% of the days of calendar year 2009, and is alive as of March 31, 2010: predict if the patient will die during the interval of time between April 1, 2010 and September 31, 2010 using data including the drugs prescribed, procedures performed, and conditions diagnosed during the year 2009.
+> For each patient who is over the age of 70 at prediction time, and is enrolled in an insurance plan for which we have claims data available for 95% of the days of calendar year 2009, and is alive as of March 31, 2010: predict if the patient will die during the interval of time between April 1, 2010 and September 31, 2010 using the drugs prescribed, procedures performed, and conditions diagnosed during the year 2009.
 
 `omop-learn` splits the conversion of this natural language specification of a task to code into two natural steps. First, we define a **cohort** of patients, each of which has an outcome. Second, we generate **features** for each of these patients. These two steps are kept independent of each other, allowing different cohorts or feature sets to very quickly be tested and evaluated. We explain how cohorts and features are initialized through the example of the end-of-life problem.
 
@@ -50,7 +50,7 @@ backend = BigQueryBackend(config)
 #### 1.2 <a name="define_cohort"></a> Cohort Initialization
 OMOP's [`PERSON`](https://github.com/OHDSI/CommonDataModel/wiki/PERSON) table is the starting point for cohort creation, and is filtered via SQL query. Note that these SQL queries can be written with variable parameters which can be adjusted for different analyses. These parameters are implemented as [Python templates](https://www.python.org/dev/peps/pep-3101/). In this example, we leave dates as parameters to show how cohort creation can be flexible.
 
-We first want to establish when patients were enrolled in insurance plans which we have access to. We do so using OMOP's `OBSERVATION_PERIOD` table. Our SQL logic finds the number of days within our data collection period (all of 2016, in this case) that a patient was enrolled in a particular plan:
+We first want to establish when patients were enrolled in insurance plans which we have access to. We do so using OMOP's `OBSERVATION_PERIOD` table. Our SQL logic finds the number of days within our data collection period (all of 2009, in this case) that a patient was enrolled in a particular plan:
 ```sql
 death_training_elig_counts as (
         select

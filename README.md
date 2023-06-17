@@ -24,13 +24,13 @@ BibTeX:
 
 ## Installation
 
-Run the following from the current directory:
+Dependencies for `omop-learn` are managed through an [environment.yml](./environment.yml) file. Run the following from the current directory to create the conda environment necessary to run the package:
 
     conda env create -f environment.yml
     conda activate omop-learn
     pip install .
 
-This installs the dependencies and omop-learn package into a conda environment `omop-learn`.
+This installs the dependencies and pip installs the `omop-learn` package into a conda environment `omop-learn`.
 
 ## Documentation
 

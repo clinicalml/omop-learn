@@ -202,7 +202,7 @@ Once features are created using the `OMOPDataset` object, `omop-learn` uses spar
 
 For temporal features, this tensor can be accessed through the variable `OMOPDatasetSparse.feature_tensor`. This object has three axes corresponding to patients, timestamps, and OMOP concepts respectively.
 
-In our EOL example, we will filter on both time and concept axes. We filter on the concept axis exactly as above, removing OMOP's catch-all "no matching concept" buckets since they don't correspond to any real medical feature. We create features by collecting counts of how many times each OMOP code has been applied to a patient over the last `d` days for several values of `d`, and then concatenating these varibales together into a feature vector. Thus for each backwards-looking window `d` we must create a seperate time filter. This filtering is executed using the `OMOPDatasetWindowed` class by calling `to_windowed()`. 
+In our EOL example, we will filter on both time and concept axes. We filter on the concept axis exactly as above, removing OMOP's catch-all "no matching concept" buckets since they don't correspond to any real medical feature. We create features by collecting counts of how many times each OMOP code has been applied to a patient over the last `d` days for several values of `d`, and then concatenating these variables together into a feature vector. Thus for each backwards-looking window `d` we must create a seperate time filter. This filtering is executed using the `OMOPDatasetWindowed` class by calling `to_windowed()`. 
 ```python
 # Re-load a pre-built dataset
 dataset = OMOPDataset.from_prebuilt(config.datasets_dir)
@@ -232,21 +232,21 @@ The `ConceptTokenizer` class offers a compact representation for storing the set
 
 ### hf
 
-Utilities for interface with [Hugging Face libraries](https://huggingface.co/) are provided. This includes a mapping from the `OMOPDataset` object to those ingestible by Hugging Face models.
+Utilities for interfacing with [Hugging Face libraries](https://huggingface.co/) are provided. This includes a mapping from the `OMOPDataset` object to dataset objects ingestible by Hugging Face models.
 
 
 ### models
 
-The files `transformer.py` and `visit_transformer.py` provide modeling methods used to create the SARD architecture [Kodialam et al. 2021]. The methods in `transformer.py` define transformer blocks and multi-head attention in the standard way. The methods in `visit_transformer.py` defines a transformer-based architecture over visits consisting of OMOP concepts.
+The files `transformer.py` and `visit_transformer.py` provide modeling methods used to create the SARD architecture [Kodialam et al. 2021]. The methods in `transformer.py` define transformer blocks and multi-head attention in the standard way. The methods in `visit_transformer.py` define a transformer-based architecture over visits consisting of OMOP concepts.
 
 
 ### sparse
 
-The classes in `sparse` allow for end-to-end modeling over the created feature representation using sparse tensors in COO format. `data.py` defines the previously reviewed `OMOPDatasetSparse` and `OMOPDatasetWindowed` classes which aggregate features over multiple time windows. `models.py` defines a wrapper over the `sklearn` `LogisticRegression` object, which integrates tightly with the `OMOPDatasetWindowed` class.
+The classes in `sparse` allow for end-to-end modeling over the created feature representation using sparse tensors in COO format. `data.py` defines the previously reviewed `OMOPDatasetSparse` and `OMOPDatasetWindowed` classes which aggregate features over multiple time windows. `models.py` defines a wrapper over the `sklearn` `LogisticRegression` object, which integrates tightly with the `OMOPDatasetWindowed` class to define an end-to-end modeling pipeline.
 
 ### torch
 
-The classes in `data.py` define a wrapper around the `OMOPDataset` object for use with pytorch tensors. Similar to the classes in `hf` this allows for quick modeling with `torch` code. `models.py` gives some example models that can ingest `OMOPDatasetTorch` objects, including an alternate implementation for the `VisitTransformer`.
+The classes in `data.py` define a wrapper around the `OMOPDataset` object for use with pytorch tensors. Similar to the classes in `hf`, this allows for quick modeling with `torch` code. `models.py` gives some example models that can ingest `OMOPDatasetTorch` objects, including an alternate implementation for the `VisitTransformer`.
 
 ### utils
 
